@@ -1,0 +1,1664 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>学習リンク管理システム</title>
+<style>
+:root{
+  --bg-base:#FFFFFF;
+  --bg-soft:#F9F9F9;
+  --text-main:#333333;
+  --text-sub:#666666;
+  --accent:#E53935;
+  --accent-dark:#D32F2F;
+  --link:#1E88E5;
+  --link-dark:#0D47A1;
+  --border:#E3E3E3;
+  --border-strong:#CFCFCF;
+  --shadow:0 2px 8px rgba(0,0,0,.06);
+  --radius:10px;
+}
+*{box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  margin:0;
+  font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic",Meiryo,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  background:var(--bg-soft);
+  color:var(--text-main);
+  -webkit-font-smoothing:antialiased;
+}
+#app{
+  height:100vh;
+  display:flex;
+  flex-direction:column;
+}
+button{font-family:inherit;cursor:pointer;}
+input,select{font-family:inherit;}
+
+/* ===== Toolbar ===== */
+header.toolbar{
+  background:var(--bg-base);
+  border-bottom:1px solid var(--border);
+  padding:10px 16px;
+  box-shadow:var(--shadow);
+  z-index:30;
+  flex-shrink:0;
+}
+.toolbar-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.toolbar-row + .toolbar-row{margin-top:8px;}
+.brand{
+  font-size:17px;
+  font-weight:800;
+  color:var(--text-main);
+  letter-spacing:.02em;
+  margin-right:6px;
+  white-space:nowrap;
+}
+.brand span{color:var(--accent);}
+.seg{
+  display:inline-flex;
+  border:1px solid var(--border-strong);
+  border-radius:8px;
+  overflow:hidden;
+  background:var(--bg-base);
+}
+.seg button{
+  border:none;
+  background:transparent;
+  padding:7px 12px;
+  font-size:13px;
+  color:var(--text-sub);
+  border-right:1px solid var(--border-strong);
+  white-space:nowrap;
+  transition:background .15s,color .15s;
+}
+.seg button:last-child{border-right:none;}
+.seg button.active{
+  background:var(--text-main);
+  color:#fff;
+  font-weight:600;
+}
+.seg button:hover:not(.active){background:var(--bg-soft);}
+
+.search-box{
+  position:relative;
+  flex:1;
+  min-width:160px;
+}
+.search-box input{
+  width:100%;
+  padding:8px 10px 8px 30px;
+  border:1px solid var(--border-strong);
+  border-radius:8px;
+  font-size:13px;
+  background:var(--bg-soft);
+  color:var(--text-main);
+}
+.search-box input:focus{outline:2px solid var(--link);outline-offset:0;background:#fff;}
+.search-box::before{
+  content:"🔍";
+  position:absolute;left:9px;top:50%;transform:translateY(-50%);
+  font-size:12px;opacity:.6;
+}
+select.sort-select{
+  padding:7px 8px;
+  border:1px solid var(--border-strong);
+  border-radius:8px;
+  font-size:13px;
+  background:var(--bg-base);
+  color:var(--text-main);
+}
+.btn{
+  border:1px solid var(--border-strong);
+  background:var(--bg-base);
+  color:var(--text-main);
+  padding:7px 12px;
+  border-radius:8px;
+  font-size:13px;
+  font-weight:600;
+  white-space:nowrap;
+  transition:background .15s,border-color .15s,color .15s;
+}
+.btn:hover{background:var(--bg-soft);}
+.btn.primary{background:var(--text-main);color:#fff;border-color:var(--text-main);}
+.btn.primary:hover{background:#1f1f1f;}
+.btn.accent{background:var(--accent);color:#fff;border-color:var(--accent);}
+.btn.accent:hover{background:var(--accent-dark);}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--text-sub);}
+.btn.ghost:hover{background:var(--bg-soft);color:var(--text-main);}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+.btn.small{padding:4px 8px;font-size:12px;border-radius:6px;}
+.spacer{flex:1;}
+
+/* ===== Content ===== */
+.content-wrap{
+  flex:1;
+  overflow-y:auto;
+  position:relative;
+  padding:0 16px 40px;
+}
+.sticky-head{
+  position:sticky;
+  top:0;
+  z-index:10;
+  background:var(--bg-soft);
+  padding-top:12px;
+}
+.breadcrumb-bar{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:4px;
+  background:var(--bg-base);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:8px 12px;
+  font-size:13px;
+  margin-bottom:8px;
+  box-shadow:var(--shadow);
+}
+.breadcrumb-bar .crumb{
+  color:var(--link);
+  cursor:pointer;
+  font-weight:600;
+}
+.breadcrumb-bar .crumb:hover{text-decoration:underline;color:var(--link-dark);}
+.breadcrumb-bar .sep{color:var(--text-sub);}
+.breadcrumb-bar .crumb.current{color:var(--text-main);cursor:default;font-weight:700;}
+.breadcrumb-bar .crumb.current:hover{text-decoration:none;}
+
+.list-header{
+  display:grid;
+  grid-template-columns:28px 26px minmax(120px,2fr) 1.4fr 1.6fr 90px;
+  gap:8px;
+  padding:8px 10px;
+  font-size:11.5px;
+  font-weight:700;
+  color:var(--text-sub);
+  background:#EFEFEF;
+  border:1px solid var(--border);
+  border-radius:8px;
+  margin-bottom:6px;
+  letter-spacing:.02em;
+}
+
+#mainContent{padding-bottom:10px;}
+.empty-state{
+  text-align:center;
+  padding:60px 20px;
+  color:var(--text-sub);
+  font-size:14px;
+}
+.empty-state .big{font-size:34px;margin-bottom:8px;}
+
+/* ---- accordion ---- */
+.node-block{margin-bottom:6px;}
+.folder-row, .item-row{
+  display:grid;
+  grid-template-columns:28px 26px minmax(120px,2fr) 1.4fr 1.6fr 90px;
+  gap:8px;
+  align-items:center;
+  background:var(--bg-base);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:9px 10px;
+  transition:background .12s,box-shadow .12s,transform .1s;
+}
+.folder-row{cursor:pointer;font-weight:700;}
+.folder-row:hover, .item-row:hover{background:#FBFBFD;box-shadow:0 1px 4px rgba(0,0,0,.07);}
+.folder-row.drag-over{outline:2px dashed var(--accent);background:#FFF3F2;}
+.item-row.drag-over{outline:2px dashed var(--link);}
+.drag-handle{cursor:grab;color:#BBB;text-align:center;font-size:14px;user-select:none;}
+.node-icon{font-size:16px;text-align:center;}
+.toggle-caret{display:inline-block;width:14px;transition:transform .15s;color:var(--text-sub);}
+.toggle-caret.open{transform:rotate(90deg);}
+.node-name{
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-main);
+  display:flex;align-items:center;gap:6px;
+}
+.node-count{color:var(--text-sub);font-weight:500;font-size:11.5px;background:var(--bg-soft);border-radius:10px;padding:1px 7px;}
+.meta-col{font-size:12.5px;color:var(--text-sub);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cat-tag{
+  display:inline-block;font-size:11px;font-weight:700;padding:1px 6px;border-radius:5px;
+  background:#FDECEA;color:var(--accent-dark);margin-right:4px;white-space:nowrap;
+}
+.url-col a{
+  color:var(--link);text-decoration:none;font-size:12.5px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block;
+}
+.url-col a:hover{color:var(--link-dark);text-decoration:underline;}
+.row-actions{display:flex;gap:4px;justify-content:flex-end;}
+.icon-btn{
+  border:none;background:transparent;color:var(--text-sub);font-size:14px;
+  padding:4px 6px;border-radius:6px;
+}
+.icon-btn:hover{background:var(--bg-soft);color:var(--text-main);}
+.icon-btn.del:hover{background:#FDECEA;color:var(--accent-dark);}
+.icon-btn.add:hover{background:#E8F0FE;color:var(--link-dark);}
+
+.accordion-children{
+  margin-left:26px;
+  padding-left:12px;
+  border-left:2px solid var(--border);
+  margin-top:6px;
+  display:none;
+}
+.accordion-children.open{display:block;}
+.node-block.depth-guide{position:relative;}
+
+/* ---- drive mode ---- */
+.drive-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+  gap:10px;
+  margin-bottom:16px;
+}
+.drive-card{
+  background:var(--bg-base);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:14px 10px 10px;
+  text-align:center;
+  cursor:pointer;
+  position:relative;
+  transition:box-shadow .12s,transform .1s,background .12s;
+}
+.drive-card:hover{box-shadow:0 3px 10px rgba(0,0,0,.09);transform:translateY(-1px);}
+.drive-card.drag-over{outline:2px dashed var(--accent);background:#FFF3F2;}
+.drive-card .icon{font-size:30px;margin-bottom:6px;}
+.drive-card .name{font-size:12.5px;font-weight:600;word-break:break-word;line-height:1.3;}
+.drive-card .count{font-size:11px;color:var(--text-sub);margin-top:3px;}
+.drive-card .card-actions{
+  position:absolute;top:4px;right:4px;display:flex;gap:2px;opacity:0;transition:opacity .12s;
+}
+.drive-card:hover .card-actions{opacity:1;}
+.drive-list-title{font-size:12px;font-weight:700;color:var(--text-sub);margin:14px 2px 6px;}
+
+/* ---- search results ---- */
+.search-path{font-size:11.5px;color:var(--text-sub);margin-top:2px;}
+
+/* ===== Modal ===== */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(20,20,20,.45);
+  display:flex;align-items:center;justify-content:center;z-index:100;padding:16px;
+}
+.modal-overlay.hidden{display:none;}
+.modal{
+  background:#fff;border-radius:12px;width:100%;max-width:440px;
+  max-height:88vh;overflow-y:auto;box-shadow:0 12px 40px rgba(0,0,0,.25);
+}
+.modal.modal-lg{max-width:720px;}
+.modal.hidden{display:none;}
+.modal-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 18px;border-bottom:1px solid var(--border);position:sticky;top:0;background:#fff;z-index:2;
+}
+.modal-head h2{font-size:16px;margin:0;color:var(--text-main);}
+.modal-close{border:none;background:none;font-size:18px;color:var(--text-sub);padding:2px 6px;border-radius:6px;}
+.modal-close:hover{background:var(--bg-soft);}
+.modal-body{padding:16px 18px;}
+.modal-foot{
+  padding:14px 18px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;
+  position:sticky;bottom:0;background:#fff;
+}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:12.5px;font-weight:700;color:var(--text-sub);margin-bottom:5px;}
+.field input[type=text],.field input[type=url],.field select{
+  width:100%;padding:8px 10px;border:1px solid var(--border-strong);border-radius:7px;font-size:13.5px;color:var(--text-main);background:#fff;
+}
+.field input:focus,.field select:focus{outline:2px solid var(--link);}
+.field-hint{font-size:11px;color:var(--text-sub);margin-top:4px;}
+.field-row{display:flex;gap:10px;}
+.field-row .field{flex:1;}
+
+/* settings modal */
+.settings-tabs{display:flex;gap:6px;border-bottom:1px solid var(--border);margin-bottom:14px;}
+.settings-tabs button{
+  border:none;background:none;padding:9px 4px;font-size:13px;font-weight:700;color:var(--text-sub);
+  border-bottom:2px solid transparent;
+}
+.settings-tabs button.active{color:var(--accent-dark);border-bottom-color:var(--accent);}
+.settings-pane{display:none;}
+.settings-pane.active{display:block;}
+.master-row{
+  display:flex;align-items:center;gap:8px;padding:7px 4px;border-bottom:1px solid var(--border);font-size:13px;
+}
+.master-row input[type=text]{flex:1;padding:6px 8px;border:1px solid var(--border-strong);border-radius:6px;font-size:13px;}
+.master-row select{padding:6px 8px;border:1px solid var(--border-strong);border-radius:6px;font-size:13px;}
+.master-add-row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+.master-add-row input[type=text]{flex:1;min-width:120px;padding:7px 9px;border:1px solid var(--border-strong);border-radius:6px;font-size:13px;}
+.data-io-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.io-card{border:1px solid var(--border);border-radius:10px;padding:14px;background:var(--bg-soft);}
+.io-card h3{margin:0 0 6px;font-size:13.5px;color:var(--text-main);}
+.io-card p{margin:0 0 10px;font-size:12px;color:var(--text-sub);line-height:1.5;}
+.io-card .io-btns{display:flex;gap:8px;flex-wrap:wrap;}
+.hidden-file-input{display:none;}
+.pill-count{font-size:11px;color:#fff;background:var(--accent);border-radius:10px;padding:1px 7px;margin-left:6px;}
+
+/* toast */
+#toast{
+  position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+  background:var(--text-main);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;
+  box-shadow:0 4px 14px rgba(0,0,0,.25);z-index:200;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(-4px);}
+
+/* responsive */
+@media (max-width:780px){
+  .list-header{display:none;}
+  .folder-row,.item-row{
+    grid-template-columns:22px 22px 1fr 66px;
+    grid-template-areas:"drag icon name actions" "drag icon meta actions" "drag icon url actions";
+    row-gap:2px;
+  }
+  .drag-handle{grid-area:drag;}
+  .node-icon{grid-area:icon;}
+  .node-name{grid-area:name;}
+  .meta-col:nth-of-type(1){grid-area:meta;}
+  .url-col{grid-area:url;}
+  .row-actions{grid-area:actions;}
+  .data-io-grid{grid-template-columns:1fr;}
+  .brand{font-size:15px;}
+}
+@media (max-width:480px){
+  .content-wrap{padding:0 8px 30px;}
+  header.toolbar{padding:8px 10px;}
+  .drive-grid{grid-template-columns:repeat(auto-fill,minmax(120px,1fr));}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="toolbar">
+    <div class="toolbar-row">
+      <div class="brand">学習リンク<span>管理</span></div>
+      <div class="seg" id="modeSeg">
+        <button data-mode="accordion">アコーディオン</button>
+        <button data-mode="drive">ドライブ階層</button>
+      </div>
+      <div class="seg" id="classSeg">
+        <button data-class="unit">単元分類</button>
+        <button data-class="site">Webサイト分類</button>
+      </div>
+      <div class="spacer"></div>
+      <button class="btn primary" id="btnNewFile">＋ 新規ファイル</button>
+      <button class="btn" id="btnNewFolder">＋ 新規フォルダ</button>
+      <button class="btn ghost" id="btnSettings">⚙ 設定・マスター管理</button>
+    </div>
+    <div class="toolbar-row">
+      <div class="search-box"><input type="text" id="searchInput" placeholder="タイトル・URL・カテゴリ・フォルダ名で検索"></div>
+      <select class="sort-select" id="sortSelect">
+        <option value="name-asc">名前 昇順 (A→Z / あ→ん)</option>
+        <option value="name-desc">名前 降順 (Z→A / ん→あ)</option>
+        <option value="id-asc">ID 昇順</option>
+        <option value="id-desc">ID 降順</option>
+      </select>
+    </div>
+  </header>
+
+  <div class="content-wrap" id="contentWrap">
+    <div class="sticky-head">
+      <div class="breadcrumb-bar hidden" id="breadcrumbBar"></div>
+      <div class="list-header" id="listHeaderRow">
+        <span></span><span></span><span>名前</span><span>分類</span><span>URL</span><span style="text-align:right;">操作</span>
+      </div>
+    </div>
+    <main id="mainContent"></main>
+  </div>
+</div>
+
+<!-- Item Modal -->
+<div class="modal-overlay hidden" id="itemOverlay">
+  <div class="modal" id="itemModal">
+    <div class="modal-head"><h2 id="itemModalTitle">新規ファイル（リンク項目）</h2><button class="modal-close" data-close="itemOverlay">✕</button></div>
+    <div class="modal-body">
+      <div class="field">
+        <label>タイトル / ファイル名</label>
+        <input type="text" id="fTitle" placeholder="例）20-1 連合国から国際連合へ">
+      </div>
+      <div class="field">
+        <label>URL</label>
+        <input type="url" id="fUrl" placeholder="https://example.com/...">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>カテゴリ</label>
+          <select id="fCategory"></select>
+        </div>
+        <div class="field">
+          <label>Webサイト</label>
+          <select id="fSite"></select>
+        </div>
+      </div>
+      <div class="field">
+        <label>所属フォルダ（単元）</label>
+        <select id="fFolder"></select>
+        <div class="field-hint" id="fFolderHint"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost" data-close="itemOverlay">キャンセル</button>
+      <button class="btn accent" id="btnSaveItem">保存する</button>
+    </div>
+  </div>
+</div>
+
+<!-- Folder Modal -->
+<div class="modal-overlay hidden" id="folderOverlay">
+  <div class="modal" id="folderModal">
+    <div class="modal-head"><h2 id="folderModalTitle">新規フォルダ</h2><button class="modal-close" data-close="folderOverlay">✕</button></div>
+    <div class="modal-body">
+      <div class="field">
+        <label>フォルダ名（大項目 / 章 / 小単元）</label>
+        <input type="text" id="fFolderName" placeholder="例）終戦をめぐる攻防と冷戦の予兆">
+      </div>
+      <div class="field">
+        <label>親フォルダ</label>
+        <select id="fParentFolder"></select>
+        <div class="field-hint" id="fParentHint"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost" data-close="folderOverlay">キャンセル</button>
+      <button class="btn accent" id="btnSaveFolder">保存する</button>
+    </div>
+  </div>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal-overlay hidden" id="settingsOverlay">
+  <div class="modal modal-lg" id="settingsModal">
+    <div class="modal-head"><h2>設定・マスター管理画面</h2><button class="modal-close" data-close="settingsOverlay">✕</button></div>
+    <div class="modal-body">
+      <div class="settings-tabs">
+        <button class="stab active" data-tab="cats">カテゴリ管理</button>
+        <button class="stab" data-tab="sites">Webサイト管理</button>
+        <button class="stab" data-tab="data">データ入出力（JSON / CSV）</button>
+      </div>
+
+      <div class="settings-pane active" id="paneCats">
+        <div id="catList"></div>
+        <div class="master-add-row">
+          <input type="text" id="newCatName" placeholder="新しいカテゴリ名">
+          <button class="btn primary small" id="btnAddCat">＋ カテゴリ追加</button>
+        </div>
+      </div>
+
+      <div class="settings-pane" id="paneSites">
+        <div id="siteList"></div>
+        <div class="master-add-row">
+          <input type="text" id="newSiteName" placeholder="新しいWebサイト名">
+          <select id="newSiteCat"></select>
+          <button class="btn primary small" id="btnAddSite">＋ サイト追加</button>
+        </div>
+      </div>
+
+      <div class="settings-pane" id="paneData">
+        <div class="data-io-grid">
+          <div class="io-card">
+            <h3>JSON（全データ）</h3>
+            <p>フォルダ・サイト・カテゴリ・リンクをすべて含む構成ファイルです。別端末でも同じ構成を復元できます。</p>
+            <div class="io-btns">
+              <button class="btn primary small" id="btnJsonExport">出力（ダウンロード）</button>
+              <button class="btn small" id="btnJsonImportLabel">入力（読み込み）</button>
+              <input type="file" accept="application/json" class="hidden-file-input" id="jsonFileInput">
+            </div>
+          </div>
+          <div class="io-card">
+            <h3>CSV（リンク一覧）</h3>
+            <p>ファイルID, タイトル, URL, カテゴリ名, 親フォルダID, 親フォルダ名, フォルダパスを出力・取込します。</p>
+            <div class="io-btns">
+              <button class="btn primary small" id="btnCsvExport">出力（ダウンロード）</button>
+              <button class="btn small" id="btnCsvImportLabel">入力（読み込み）</button>
+              <input type="file" accept=".csv" class="hidden-file-input" id="csvFileInput">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost" data-close="settingsOverlay">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+(function(){
+"use strict";
+
+/* =========================================================
+   1. データモデル & 初期シードデータ
+   ========================================================= */
+function seedData(){
+  const categories = [
+    {id:'cat_01', name:'主要内容'},
+    {id:'cat_02', name:'詳細（授業）'},
+    {id:'cat_03', name:'補足教科書'},
+    {id:'cat_04', name:'本情報'}
+  ];
+  const sites = [
+    {id:'site_001', name:'研伸館ジオヒストリー', categoryId:'cat_01'},
+    {id:'site_002', name:'グシャの世界史探求', categoryId:'cat_01'},
+    {id:'site_003', name:'相関図・関係図', categoryId:'cat_02'},
+    {id:'site_004', name:'スタサプスタンダード', categoryId:'cat_02'},
+    {id:'site_005', name:'スタサプTry it', categoryId:'cat_02'},
+    {id:'site_006', name:'世界史の窓', categoryId:'cat_03'},
+    {id:'site_007', name:'窓ノート目次', categoryId:'cat_03'},
+    {id:'site_008', name:'農三世界史 授業プリント', categoryId:'cat_03'},
+    {id:'site_009', name:'教科書', categoryId:'cat_04'},
+    {id:'site_010', name:'資料集', categoryId:'cat_04'},
+    {id:'site_011', name:'参考書', categoryId:'cat_04'}
+  ];
+  const folders = [
+    {id:'folder_001', name:'戦後秩序構想と冷戦の形成', parentId:null, order:0},
+    {id:'folder_002', name:'終戦をめぐる攻防と冷戦の予兆', parentId:'folder_001', order:0},
+    {id:'folder_003', name:'第二次世界大戦と戦後の東アジア', parentId:'folder_001', order:1},
+    {id:'folder_004', name:'継続する東アジアの戦争', parentId:'folder_001', order:2},
+    {id:'folder_005', name:'アジア諸国の独立と脱植民地化', parentId:null, order:1},
+    {id:'folder_006', name:'植民地統治の再開と独立の困難', parentId:'folder_005', order:0},
+    {id:'folder_007', name:'朝鮮戦争と東アジアの「冷戦」', parentId:null, order:2},
+    {id:'folder_008', name:'朝鮮戦争', parentId:'folder_007', order:0},
+    {id:'folder_009', name:'サンフランシスコ講和会議', parentId:'folder_007', order:1},
+    {id:'folder_010', name:'冷戦と国内政治', parentId:'folder_007', order:2}
+  ];
+  const rawItems = [
+    ['folder_002','20-1 連合国から国際連合へ'],
+    ['folder_002','アメリカの軍事力・経済力'],
+    ['folder_002','ソ連圏の形成'],
+    ['folder_002','西欧諸国での革新政党の躍進'],
+    ['folder_002','ヨーロッパにおける冷戦の形成'],
+    ['folder_002','対枢軸国講和と戦後処理'],
+    ['folder_003','アジア・太平洋戦争と日本の敗戦'],
+    ['folder_003','カイロ宣言と東アジアの戦後構想'],
+    ['folder_003','19-4 ついにアメリカが動いた！日米の開戦！'],
+    ['folder_003','ポツダム宣言と日本の敗戦'],
+    ['folder_003','「日本よ、出ていけ！」対日占領統治'],
+    ['folder_003','「日本の戦後処理！」帝国の解体と分断国家の形成'],
+    ['folder_004','19-4 大日本帝国の解体と連合国の接収'],
+    ['folder_004','引き揚げと人の移動'],
+    ['folder_004','朝鮮半島の分断と占領統治'],
+    ['folder_004','20-1 台湾の接収と２・２８事件'],
+    ['folder_004','ソ連の満州接収と国共内戦'],
+    ['folder_004','「国民党ｖｓ共産党」'],
+    ['folder_004','中華人民共和国の成立'],
+    ['folder_004','「２つの中国」'],
+    ['folder_006','揺れ動く中東'],
+    ['folder_006','20-2 「西アジア諸地域の動き」'],
+    ['folder_006','南アジア諸国の独立'],
+    ['folder_006','「インドの独立達成！」'],
+    ['folder_006','東南アジア諸国の独立'],
+    ['folder_006','「ベトナムの独立を認めないフランス！」'],
+    ['folder_008','20-2 「米ソの代理戦争！朝鮮戦争の勃発！！」'],
+    ['folder_009','20-3 「核を保有すると、発言力が強くなる！？」'],
+    ['folder_009','東アジアの安全保障条約'],
+    ['folder_009','「ソ連がアメリカに歩み寄る！？」'],
+    ['folder_010','「毛沢東の暴走！」社会主義中国の国家建設']
+  ];
+  const items = rawItems.map((r,idx)=>{
+    const site = sites[idx % sites.length];
+    return {
+      id:'item_'+String(idx+1).padStart(3,'0'),
+      title:r[1],
+      url:'https://example.com/history/'+encodeURIComponent(r[1].slice(0,10)),
+      folderId:r[0],
+      categoryId:site.categoryId,
+      siteId:site.id,
+      order:0
+    };
+  });
+  // reassign per-folder order
+  const byFolder = {};
+  items.forEach(it=>{
+    byFolder[it.folderId] = byFolder[it.folderId] || 0;
+    it.order = byFolder[it.folderId]++;
+  });
+  return {categories, sites, folders, items};
+}
+
+let DB = loadFromStorageOrSeed();
+function loadFromStorageOrSeed(){
+  try{
+    const raw = localStorage.getItem('studyLinkDB_v1');
+    if(raw){
+      const parsed = JSON.parse(raw);
+      if(parsed && parsed.categories && parsed.folders && parsed.items && parsed.sites) return parsed;
+    }
+  }catch(e){}
+  return seedData();
+}
+function persist(){
+  try{ localStorage.setItem('studyLinkDB_v1', JSON.stringify(DB)); }catch(e){}
+}
+
+/* =========================================================
+   2. アプリ状態
+   ========================================================= */
+const STATE = {
+  mode:'accordion',        // accordion | drive
+  classification:'unit',   // unit | site
+  search:'',
+  sort:'name-asc',
+  expanded:new Set(),      // accordion expanded node ids
+  currentPath:[],          // drive mode path (array of {id,name,type})
+  addContext:{type:null,id:null}, // context for restricted folder/category selects
+  dragging:null,           // {id,type}
+};
+
+/* =========================================================
+   3. ユーティリティ
+   ========================================================= */
+function escapeHtml(str){
+  return String(str==null?'':str).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toast._tm);
+  toast._tm = setTimeout(()=>t.classList.remove('show'),2200);
+}
+function nextId(prefix, arr){
+  let max = 0;
+  arr.forEach(o=>{
+    const m = String(o.id).match(/_(\d+)$/);
+    if(m) max = Math.max(max, parseInt(m[1],10));
+  });
+  return prefix+'_'+String(max+1).padStart(3,'0');
+}
+function idNum(id){
+  const m = String(id).match(/_(\d+)$/);
+  return m? parseInt(m[1],10) : 0;
+}
+function catName(id){ const c = DB.categories.find(x=>x.id===id); return c? c.name : '(未分類)'; }
+function siteName(id){ const s = DB.sites.find(x=>x.id===id); return s? s.name : '(未設定)'; }
+function folderById(id){ return DB.folders.find(f=>f.id===id); }
+
+function folderPath(folderId){
+  const names = [];
+  let cur = folderById(folderId);
+  let guard = 0;
+  while(cur && guard++ < 50){
+    names.unshift(cur.name);
+    cur = cur.parentId? folderById(cur.parentId) : null;
+  }
+  return names.join(' ＞ ');
+}
+function getDescendantFolderIds(folderId){
+  const out = [];
+  const stack = [folderId];
+  while(stack.length){
+    const cur = stack.pop();
+    DB.folders.filter(f=>f.parentId===cur).forEach(f=>{ out.push(f.id); stack.push(f.id); });
+  }
+  return out;
+}
+function isFolderOrDescendant(candidateId, ancestorId){
+  if(candidateId===ancestorId) return true;
+  return getDescendantFolderIds(ancestorId).includes(candidateId);
+}
+
+/* =========================================================
+   4. ツリー抽象化（単元分類 / サイト分類 共通インターフェース）
+   ========================================================= */
+// ノード種別: folder / category / site / item
+function getChildNodes(parentId, classification){
+  if(classification==='unit'){
+    const folders = DB.folders.filter(f=>f.parentId===parentId).map(f=>({id:f.id,type:'folder',name:f.name,order:f.order}));
+    const items = DB.items.filter(it=>it.folderId===parentId).map(it=>({id:it.id,type:'item',name:it.title,order:it.order,ref:it}));
+    return {containers:folders, items:items};
+  }else{
+    if(parentId===null){
+      const cats = DB.categories.map(c=>({id:c.id,type:'category',name:c.name,order:0}));
+      return {containers:cats, items:[]};
+    }
+    if(String(parentId).startsWith('cat_')){
+      const sites = DB.sites.filter(s=>s.categoryId===parentId).map(s=>({id:s.id,type:'site',name:s.name,order:0}));
+      return {containers:sites, items:[]};
+    }
+    if(String(parentId).startsWith('site_')){
+      const items = DB.items.filter(it=>it.siteId===parentId).map(it=>({id:it.id,type:'item',name:it.title,order:it.order,ref:it}));
+      return {containers:[], items:items};
+    }
+    return {containers:[], items:[]};
+  }
+}
+function containerChildCount(node, classification){
+  // recursively counts leaf items under a container node (for display badge)
+  let count = 0;
+  const stack=[node.id];
+  const seenTypes = {};
+  function visit(id,type){
+    const kids = getChildNodes(id, classification);
+    count += kids.items.length;
+    kids.containers.forEach(c=>visit(c.id,c.type));
+  }
+  visit(node.id, node.type);
+  return count;
+}
+
+/* =========================================================
+   5. 並び替え / 検索
+   ========================================================= */
+function sortNodes(nodes){
+  const s = STATE.sort;
+  const arr = nodes.slice();
+  arr.sort((a,b)=>{
+    if(s==='name-asc') return a.name.localeCompare(b.name,'ja');
+    if(s==='name-desc') return b.name.localeCompare(a.name,'ja');
+    if(s==='id-asc') return idNum(a.id)-idNum(b.id);
+    if(s==='id-desc') return idNum(b.id)-idNum(a.id);
+    return (a.order||0)-(b.order||0);
+  });
+  return arr;
+}
+
+function searchAllItems(query){
+  const q = query.trim().toLowerCase();
+  if(!q) return [];
+  return DB.items.filter(it=>{
+    const hay = [
+      it.title, it.url, catName(it.categoryId), siteName(it.siteId), folderPath(it.folderId), it.id
+    ].join(' ').toLowerCase();
+    return hay.includes(q);
+  });
+}
+
+/* =========================================================
+   6. レンダリング
+   ========================================================= */
+function render(){
+  renderToolbarState();
+  renderBreadcrumb();
+  renderMain();
+}
+
+function renderToolbarState(){
+  document.querySelectorAll('#modeSeg button').forEach(b=>b.classList.toggle('active', b.dataset.mode===STATE.mode));
+  document.querySelectorAll('#classSeg button').forEach(b=>b.classList.toggle('active', b.dataset.class===STATE.classification));
+  document.getElementById('btnNewFolder').style.display = (STATE.classification==='unit') ? '' : 'none';
+  document.getElementById('sortSelect').value = STATE.sort;
+}
+
+function renderBreadcrumb(){
+  const bar = document.getElementById('breadcrumbBar');
+  if(STATE.mode!=='drive' || STATE.search.trim()){ bar.classList.add('hidden'); bar.innerHTML=''; return; }
+  bar.classList.remove('hidden');
+  const rootLabel = STATE.classification==='unit' ? '📁 ホーム（単元）' : '📁 ホーム（Webサイト分類）';
+  let html = `<span class="crumb ${STATE.currentPath.length===0?'current':''}" data-crumb-idx="-1">${rootLabel}</span>`;
+  STATE.currentPath.forEach((p,idx)=>{
+    const isLast = idx===STATE.currentPath.length-1;
+    html += `<span class="sep">›</span><span class="crumb ${isLast?'current':''}" data-crumb-idx="${idx}">${escapeHtml(p.name)}</span>`;
+  });
+  bar.innerHTML = html;
+}
+
+function renderMain(){
+  const main = document.getElementById('mainContent');
+  const q = STATE.search.trim();
+  if(q){
+    main.innerHTML = renderSearchResults(q);
+  }else if(STATE.mode==='accordion'){
+    main.innerHTML = renderAccordion();
+  }else{
+    main.innerHTML = renderDrive();
+  }
+  bindRowEvents();
+}
+
+function nodeIcon(type){
+  if(type==='folder') return '📁';
+  if(type==='category') return '🗂️';
+  if(type==='site') return '🌐';
+  return '🔗';
+}
+
+function buildItemRow(item, depth){
+  const meta = STATE.classification==='unit'
+    ? `<span class="cat-tag">${escapeHtml(catName(item.categoryId))}</span>${escapeHtml(siteName(item.siteId))}`
+    : `${escapeHtml(folderPath(item.folderId))}`;
+  return `
+  <div class="node-block">
+    <div class="item-row" draggable="true" data-id="${item.id}" data-type="item">
+      <span class="drag-handle">⋮⋮</span>
+      <span class="node-icon">🔗</span>
+      <span class="node-name" title="${escapeHtml(item.title)}">${escapeHtml(item.title)}</span>
+      <span class="meta-col">${meta}</span>
+      <span class="url-col"><a href="${escapeHtml(item.url)}" target="_blank" rel="noopener">${escapeHtml(item.url)}</a></span>
+      <span class="row-actions">
+        <button class="icon-btn" data-act="edit-item" data-id="${item.id}" title="編集">✎</button>
+        <button class="icon-btn del" data-act="del-item" data-id="${item.id}" title="削除">🗑</button>
+      </span>
+    </div>
+  </div>`;
+}
+
+function buildAccordionContainer(node, depth){
+  const isOpen = STATE.expanded.has(node.id);
+  const kids = getChildNodes(node.id, STATE.classification);
+  const count = kids.items.length + kids.containers.length;
+  const canDelete = true;
+  let inner = '';
+  if(isOpen){
+    const sortedContainers = sortNodes(kids.containers);
+    const sortedItems = sortNodes(kids.items);
+    inner += sortedContainers.map(c=>buildAccordionContainer(c, depth+1)).join('');
+    inner += sortedItems.map(it=>buildItemRow(it.ref, depth+1)).join('');
+    if(!sortedContainers.length && !sortedItems.length){
+      inner = `<div class="empty-state" style="padding:18px;"><div>このフォルダには項目がありません</div></div>`;
+    }
+  }
+  return `
+  <div class="node-block">
+    <div class="folder-row" draggable="true" data-id="${node.id}" data-type="${node.type}" data-act="toggle">
+      <span class="drag-handle">⋮⋮</span>
+      <span class="node-icon toggle-caret ${isOpen?'open':''}">▶</span>
+      <span class="node-name" title="${escapeHtml(node.name)}">${nodeIcon(node.type)}&nbsp;${escapeHtml(node.name)}<span class="node-count">${count}</span></span>
+      <span class="meta-col">${node.type==='folder'? '単元フォルダ' : (node.type==='category'? 'カテゴリ' : 'Webサイト')}</span>
+      <span class="url-col"></span>
+      <span class="row-actions">
+        <button class="icon-btn add" data-act="add-here" data-id="${node.id}" data-type="${node.type}" title="ここに追加">＋</button>
+        ${node.type==='folder' ? `<button class="icon-btn" data-act="edit-folder" data-id="${node.id}" title="名前変更">✎</button>` : ''}
+        ${node.type==='folder' ? `<button class="icon-btn del" data-act="del-folder" data-id="${node.id}" title="削除">🗑</button>` : ''}
+      </span>
+    </div>
+    <div class="accordion-children ${isOpen?'open':''}">${inner}</div>
+  </div>`;
+}
+
+function renderAccordion(){
+  const kids = getChildNodes(null, STATE.classification);
+  const containers = sortNodes(kids.containers);
+  const items = sortNodes(kids.items);
+  if(!containers.length && !items.length){
+    return `<div class="empty-state"><div class="big">🗂️</div>データがありません。「新規フォルダ」または「新規ファイル」から追加してください。</div>`;
+  }
+  return containers.map(c=>buildAccordionContainer(c,0)).join('') + items.map(it=>buildItemRow(it.ref,0)).join('');
+}
+
+function renderDrive(){
+  const parentId = STATE.currentPath.length ? STATE.currentPath[STATE.currentPath.length-1].id : null;
+  const kids = getChildNodes(parentId, STATE.classification);
+  const containers = sortNodes(kids.containers);
+  const items = sortNodes(kids.items);
+  if(!containers.length && !items.length){
+    return `<div class="empty-state"><div class="big">📭</div>このフォルダは空です。</div>`;
+  }
+  let html = '';
+  if(containers.length){
+    html += `<div class="drive-grid">` + containers.map(c=>{
+      const cnt = containerChildCount(c, STATE.classification);
+      return `
+      <div class="drive-card" draggable="true" data-id="${c.id}" data-type="${c.type}" data-act="drive-open">
+        <div class="card-actions">
+          <button class="icon-btn add" data-act="add-here" data-id="${c.id}" data-type="${c.type}" title="ここに追加">＋</button>
+          ${c.type==='folder' ? `<button class="icon-btn" data-act="edit-folder" data-id="${c.id}" title="名前変更">✎</button><button class="icon-btn del" data-act="del-folder" data-id="${c.id}" title="削除">🗑</button>` : ''}
+        </div>
+        <div class="icon">${nodeIcon(c.type)}</div>
+        <div class="name">${escapeHtml(c.name)}</div>
+        <div class="count">${cnt}件</div>
+      </div>`;
+    }).join('') + `</div>`;
+  }
+  if(items.length){
+    html += `<div class="drive-list-title">ファイル（${items.length}）</div>`;
+    html += items.map(it=>buildItemRow(it.ref,0)).join('');
+  }
+  return html;
+}
+
+function renderSearchResults(q){
+  let results = searchAllItems(q);
+  const nodeList = results.map(it=>({id:it.id,name:it.title,order:it.order,ref:it}));
+  const sorted = sortNodes(nodeList);
+  if(!sorted.length){
+    return `<div class="empty-state"><div class="big">🔍</div>「${escapeHtml(q)}」に一致する項目は見つかりませんでした。</div>`;
+  }
+  return `<div class="drive-list-title">検索結果（${sorted.length}件）</div>` + sorted.map(n=>{
+    const item = n.ref;
+    return `
+    <div class="node-block">
+      <div class="item-row" draggable="false" data-id="${item.id}" data-type="item">
+        <span class="drag-handle" style="visibility:hidden;">⋮⋮</span>
+        <span class="node-icon">🔗</span>
+        <span class="node-name" title="${escapeHtml(item.title)}">
+          ${escapeHtml(item.title)}
+          <div class="search-path">${escapeHtml(catName(item.categoryId))} ＞ ${escapeHtml(siteName(item.siteId))} ｜ ${escapeHtml(folderPath(item.folderId))}</div>
+        </span>
+        <span class="meta-col"><span class="cat-tag">${escapeHtml(catName(item.categoryId))}</span>${escapeHtml(siteName(item.siteId))}</span>
+        <span class="url-col"><a href="${escapeHtml(item.url)}" target="_blank" rel="noopener">${escapeHtml(item.url)}</a></span>
+        <span class="row-actions">
+          <button class="icon-btn" data-act="edit-item" data-id="${item.id}" title="編集">✎</button>
+          <button class="icon-btn del" data-act="del-item" data-id="${item.id}" title="削除">🗑</button>
+        </span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* =========================================================
+   7. イベント処理（一覧内: 委任）
+   ========================================================= */
+function bindRowEvents(){
+  const main = document.getElementById('mainContent');
+  main.querySelectorAll('[data-act="toggle"]').forEach(el=>{
+    el.addEventListener('click',(e)=>{
+      if(e.target.closest('[data-act]')!==el) return; // avoid double trigger from inner buttons
+      const id = el.dataset.id;
+      if(STATE.expanded.has(id)) STATE.expanded.delete(id); else STATE.expanded.add(id);
+      renderMain();
+    });
+  });
+  main.querySelectorAll('[data-act="drive-open"]').forEach(el=>{
+    el.addEventListener('click',(e)=>{
+      if(e.target.closest('.card-actions')) return;
+      const id = el.dataset.id, type = el.dataset.type, name = el.querySelector('.name').textContent;
+      STATE.currentPath.push({id,name,type});
+      STATE.addContext = {type, id};
+      renderBreadcrumb(); renderMain();
+    });
+  });
+  main.querySelectorAll('[data-act="add-here"]').forEach(el=>{
+    el.addEventListener('click',(e)=>{
+      e.stopPropagation();
+      STATE.addContext = {type:el.dataset.type, id:el.dataset.id};
+      if(el.dataset.type==='folder' || el.dataset.type==='category' || el.dataset.type==='site'){
+        openItemModal({mode:'add'});
+      }
+    });
+  });
+  main.querySelectorAll('[data-act="edit-item"]').forEach(el=>{
+    el.addEventListener('click',(e)=>{ e.stopPropagation(); openItemModal({mode:'edit', id:el.dataset.id}); });
+  });
+  main.querySelectorAll('[data-act="del-item"]').forEach(el=>{
+    el.addEventListener('click',(e)=>{ e.stopPropagation(); deleteItem(el.dataset.id); });
+  });
+  main.querySelectorAll('[data-act="edit-folder"]').forEach(el=>{
+    el.addEventListener('click',(e)=>{ e.stopPropagation(); openFolderModal({mode:'edit', id:el.dataset.id}); });
+  });
+  main.querySelectorAll('[data-act="del-folder"]').forEach(el=>{
+    el.addEventListener('click',(e)=>{ e.stopPropagation(); deleteFolder(el.dataset.id); });
+  });
+
+  // drag & drop
+  main.querySelectorAll('[draggable="true"]').forEach(el=>{
+    el.addEventListener('dragstart', e=>{
+      STATE.dragging = {id:el.dataset.id, type:el.dataset.type};
+      e.dataTransfer.effectAllowed='move';
+      try{ e.dataTransfer.setData('text/plain', el.dataset.id); }catch(err){}
+    });
+    el.addEventListener('dragend', ()=>{ STATE.dragging=null; });
+  });
+  main.querySelectorAll('.folder-row, .drive-card, .item-row').forEach(el=>{
+    el.addEventListener('dragover', e=>{
+      if(!STATE.dragging) return;
+      e.preventDefault();
+      el.classList.add('drag-over');
+    });
+    el.addEventListener('dragleave', ()=>{ el.classList.remove('drag-over'); });
+    el.addEventListener('drop', e=>{
+      e.preventDefault();
+      el.classList.remove('drag-over');
+      if(!STATE.dragging) return;
+      const targetId = el.dataset.id, targetType = el.dataset.type;
+      handleDrop(STATE.dragging.id, STATE.dragging.type, targetId, targetType);
+      STATE.dragging = null;
+    });
+  });
+}
+
+/* breadcrumb click */
+document.getElementById('breadcrumbBar').addEventListener('click', e=>{
+  const crumb = e.target.closest('.crumb');
+  if(!crumb) return;
+  const idx = parseInt(crumb.dataset.crumbIdx,10);
+  if(idx===-1){ STATE.currentPath=[]; STATE.addContext={type:null,id:null}; }
+  else{
+    STATE.currentPath = STATE.currentPath.slice(0, idx+1);
+    const tail = STATE.currentPath[STATE.currentPath.length-1];
+    STATE.addContext = {type:tail.type, id:tail.id};
+  }
+  renderBreadcrumb(); renderMain();
+});
+
+/* =========================================================
+   8. ドラッグ&ドロップ移動ロジック
+   ========================================================= */
+function renumber(list){ list.forEach((o,idx)=>o.order=idx); }
+
+function reorderSiblings(kind, key, keyVal, draggedId, targetId){
+  let arr;
+  if(kind==='folder') arr = DB.folders.filter(f=>f.parentId===keyVal);
+  else arr = DB.items.filter(i=>i[key]===keyVal);
+  arr.sort((a,b)=>(a.order||0)-(b.order||0));
+  const fromIdx = arr.findIndex(x=>x.id===draggedId);
+  const toIdx = arr.findIndex(x=>x.id===targetId);
+  if(fromIdx<0 || toIdx<0) return;
+  const [moved] = arr.splice(fromIdx,1);
+  arr.splice(toIdx,0,moved);
+  renumber(arr);
+}
+
+function handleDrop(draggedId, draggedType, targetId, targetType){
+  if(draggedId===targetId) return;
+  if(STATE.classification==='unit'){
+    if(targetType==='folder'){
+      if(draggedType==='folder'){
+        if(isFolderOrDescendant(targetId, draggedId)){ toast('自分自身の下位フォルダには移動できません'); return; }
+        const f = folderById(draggedId);
+        if(f.parentId===targetId) return;
+        f.parentId = targetId;
+        const sibs = DB.folders.filter(x=>x.parentId===targetId);
+        renumber(sibs.sort((a,b)=>(a.order||0)-(b.order||0)));
+      }else if(draggedType==='item'){
+        const it = DB.items.find(i=>i.id===draggedId);
+        it.folderId = targetId;
+        const sibs = DB.items.filter(x=>x.folderId===targetId);
+        renumber(sibs.sort((a,b)=>(a.order||0)-(b.order||0)));
+      }
+    }else if(targetType==='item'){
+      const targetItem = DB.items.find(i=>i.id===targetId);
+      if(draggedType==='item'){
+        const dragged = DB.items.find(i=>i.id===draggedId);
+        if(dragged.folderId===targetItem.folderId){
+          reorderSiblings('item','folderId',dragged.folderId,draggedId,targetId);
+        }else{
+          dragged.folderId = targetItem.folderId;
+          const sibs = DB.items.filter(x=>x.folderId===targetItem.folderId);
+          renumber(sibs.sort((a,b)=>(a.order||0)-(b.order||0)));
+        }
+      }else if(draggedType==='folder'){
+        if(isFolderOrDescendant(targetItem.folderId, draggedId)){ toast('移動できません'); return; }
+        const f = folderById(draggedId);
+        f.parentId = targetItem.folderId;
+      }
+    }
+  }else{
+    // site classification
+    if(draggedType==='item'){
+      const dragged = DB.items.find(i=>i.id===draggedId);
+      if(targetType==='site'){
+        const site = DB.sites.find(s=>s.id===targetId);
+        dragged.siteId = targetId; dragged.categoryId = site.categoryId;
+        const sibs = DB.items.filter(x=>x.siteId===targetId);
+        renumber(sibs.sort((a,b)=>(a.order||0)-(b.order||0)));
+      }else if(targetType==='category'){
+        toast('カテゴリではなく、その中のWebサイトへドロップしてください');
+        return;
+      }else if(targetType==='item'){
+        const targetItem = DB.items.find(i=>i.id===targetId);
+        if(dragged.siteId===targetItem.siteId){
+          reorderSiblings('item','siteId',dragged.siteId,draggedId,targetId);
+        }else{
+          dragged.siteId = targetItem.siteId; dragged.categoryId = targetItem.categoryId;
+        }
+      }
+    }else{
+      toast('サイト分類ではフォルダの移動はできません');
+      return;
+    }
+  }
+  persist();
+  renderMain();
+  toast('移動しました');
+}
+
+/* =========================================================
+   9. モーダル: 共通
+   ========================================================= */
+function openOverlay(id){ document.getElementById(id).classList.remove('hidden'); }
+function closeOverlay(id){ document.getElementById(id).classList.add('hidden'); }
+document.querySelectorAll('[data-close]').forEach(btn=>{
+  btn.addEventListener('click', ()=>closeOverlay(btn.dataset.close));
+});
+document.querySelectorAll('.modal-overlay').forEach(ov=>{
+  ov.addEventListener('click', e=>{ if(e.target===ov) ov.classList.add('hidden'); });
+});
+
+/* ---- flatten folders with indentation, honoring restriction/exclusion ---- */
+function flattenFolders({restrictToId=null, excludeIds=[]}={}){
+  const roots = restrictToId
+    ? [folderById(restrictToId)].filter(Boolean)
+    : DB.folders.filter(f=>f.parentId===null);
+  const out = [];
+  function visit(f, depth){
+    if(!f || excludeIds.includes(f.id)) return;
+    out.push({id:f.id, name:('　'.repeat(depth)+(depth>0?'└ ':'')+f.name)});
+    DB.folders.filter(c=>c.parentId===f.id).sort((a,b)=>(a.order||0)-(b.order||0)).forEach(c=>visit(c, depth+1));
+  }
+  if(restrictToId){
+    visit(folderById(restrictToId), 0);
+  }else{
+    DB.folders.filter(f=>f.parentId===null).sort((a,b)=>(a.order||0)-(b.order||0)).forEach(f=>visit(f,0));
+  }
+  return out;
+}
+
+/* =========================================================
+   10. アイテム（リンク）モーダル
+   ========================================================= */
+let itemModalState = {mode:'add', id:null};
+
+function populateCategorySelect(sel, restrictCatId){
+  sel.innerHTML = (restrictCatId ? DB.categories.filter(c=>c.id===restrictCatId) : DB.categories)
+    .map(c=>`<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+}
+function populateSiteSelect(sel, categoryId, restrictSiteId){
+  let list = DB.sites.filter(s=>s.categoryId===categoryId);
+  if(restrictSiteId) list = list.filter(s=>s.id===restrictSiteId);
+  sel.innerHTML = list.map(s=>`<option value="${s.id}">${escapeHtml(s.name)}</option>`).join('');
+}
+function populateFolderSelectEl(sel, restrictToId){
+  const list = flattenFolders({restrictToId});
+  if(!list.length){
+    sel.innerHTML = `<option value="">（フォルダがありません。先にフォルダを作成してください）</option>`;
+    return;
+  }
+  sel.innerHTML = list.map(f=>`<option value="${f.id}">${escapeHtml(f.name)}</option>`).join('');
+}
+
+function openItemModal({mode, id}){
+  itemModalState = {mode, id};
+  const title = document.getElementById('itemModalTitle');
+  const fCategory = document.getElementById('fCategory');
+  const fSite = document.getElementById('fSite');
+  const fFolder = document.getElementById('fFolder');
+  const hint = document.getElementById('fFolderHint');
+
+  let restrictFolderId = null, restrictCatId = null, restrictSiteId = null;
+
+  if(mode==='add'){
+    title.textContent = '新規ファイル（リンク項目）を追加';
+    document.getElementById('fTitle').value = '';
+    document.getElementById('fUrl').value = '';
+
+    if(STATE.classification==='unit' && STATE.addContext.type==='folder'){
+      restrictFolderId = STATE.addContext.id;
+    }
+    if(STATE.classification==='site'){
+      if(STATE.addContext.type==='site'){ restrictSiteId = STATE.addContext.id; const s=DB.sites.find(x=>x.id===restrictSiteId); restrictCatId = s? s.categoryId:null; }
+      else if(STATE.addContext.type==='category'){ restrictCatId = STATE.addContext.id; }
+    }
+    populateCategorySelect(fCategory, restrictCatId);
+    fCategory.value = restrictCatId || fCategory.options[0]?.value;
+    populateSiteSelect(fSite, fCategory.value, restrictSiteId);
+    populateFolderSelectEl(fFolder, restrictFolderId);
+    if(STATE.classification==='unit' && restrictFolderId){
+      fFolder.value = restrictFolderId;
+      hint.textContent = '現在のフォルダおよびその下位フォルダのみ選択できます。';
+    }else{
+      hint.textContent = '';
+    }
+  }else{
+    const it = DB.items.find(x=>x.id===id);
+    if(!it) return;
+    title.textContent = 'リンク項目を編集';
+    document.getElementById('fTitle').value = it.title;
+    document.getElementById('fUrl').value = it.url;
+    populateCategorySelect(fCategory, null);
+    fCategory.value = it.categoryId;
+    populateSiteSelect(fSite, it.categoryId, null);
+    fSite.value = it.siteId;
+    populateFolderSelectEl(fFolder, null); // 編集画面は全フォルダ構造を表示
+    fFolder.value = it.folderId;
+    hint.textContent = '編集画面ではすべてのフォルダ構造から選択できます。';
+  }
+  openOverlay('itemOverlay');
+}
+
+document.getElementById('fCategory').addEventListener('change', (e)=>{
+  const fSite = document.getElementById('fSite');
+  populateSiteSelect(fSite, e.target.value, null);
+});
+
+document.getElementById('btnSaveItem').addEventListener('click', ()=>{
+  const titleVal = document.getElementById('fTitle').value.trim();
+  const urlVal = document.getElementById('fUrl').value.trim();
+  const catVal = document.getElementById('fCategory').value;
+  const siteVal = document.getElementById('fSite').value;
+  const folderVal = document.getElementById('fFolder').value;
+  if(!titleVal){ toast('タイトルを入力してください'); return; }
+  if(!folderVal){ toast('所属フォルダを選択してください（先にフォルダを作成してください）'); return; }
+  if(itemModalState.mode==='add'){
+    const sibs = DB.items.filter(i=>i.folderId===folderVal);
+    const it = {
+      id: nextId('item', DB.items),
+      title: titleVal, url: urlVal || '#',
+      categoryId: catVal, siteId: siteVal, folderId: folderVal,
+      order: sibs.length
+    };
+    DB.items.push(it);
+    toast('リンクを追加しました');
+  }else{
+    const it = DB.items.find(x=>x.id===itemModalState.id);
+    if(it){
+      it.title=titleVal; it.url=urlVal||'#'; it.categoryId=catVal; it.siteId=siteVal; it.folderId=folderVal;
+      toast('リンクを更新しました');
+    }
+  }
+  persist();
+  closeOverlay('itemOverlay');
+  render();
+});
+
+function deleteItem(id){
+  const it = DB.items.find(x=>x.id===id);
+  if(!it) return;
+  if(!confirm(`「${it.title}」を削除しますか？`)) return;
+  DB.items = DB.items.filter(x=>x.id!==id);
+  persist(); render(); toast('削除しました');
+}
+
+/* =========================================================
+   11. フォルダモーダル
+   ========================================================= */
+let folderModalState = {mode:'add', id:null};
+
+function openFolderModal({mode, id}){
+  folderModalState = {mode, id};
+  const title = document.getElementById('folderModalTitle');
+  const nameInput = document.getElementById('fFolderName');
+  const parentSel = document.getElementById('fParentFolder');
+  const hint = document.getElementById('fParentHint');
+
+  const rootOptionHtml = `<option value="">（ルート／最上位）</option>`;
+
+  if(mode==='add'){
+    title.textContent = '新規フォルダを追加';
+    nameInput.value = '';
+    let restrictToId = (STATE.addContext.type==='folder') ? STATE.addContext.id : null;
+    if(restrictToId){
+      populateFolderSelectEl(parentSel, restrictToId);
+      parentSel.value = restrictToId;
+      hint.textContent = '現在のフォルダおよびその下位フォルダのみ選択できます。';
+    }else{
+      parentSel.innerHTML = rootOptionHtml + flattenFolders({}).map(f=>`<option value="${f.id}">${escapeHtml(f.name)}</option>`).join('');
+      parentSel.value = '';
+      hint.textContent = '';
+    }
+  }else{
+    const f = folderById(id);
+    if(!f) return;
+    title.textContent = 'フォルダ名を編集';
+    nameInput.value = f.name;
+    const excludeIds = [f.id, ...getDescendantFolderIds(f.id)];
+    parentSel.innerHTML = rootOptionHtml + flattenFolders({excludeIds}).map(o=>`<option value="${o.id}">${escapeHtml(o.name)}</option>`).join('');
+    parentSel.value = f.parentId || '';
+    hint.textContent = '自分自身やその下位フォルダを親には設定できません。';
+  }
+  openOverlay('folderOverlay');
+}
+
+document.getElementById('btnSaveFolder').addEventListener('click', ()=>{
+  const nameVal = document.getElementById('fFolderName').value.trim();
+  const parentVal = document.getElementById('fParentFolder').value || null;
+  if(!nameVal){ toast('フォルダ名を入力してください'); return; }
+  if(folderModalState.mode==='add'){
+    const sibs = DB.folders.filter(f=>f.parentId===parentVal);
+    const f = {id: nextId('folder', DB.folders), name:nameVal, parentId:parentVal, order:sibs.length};
+    DB.folders.push(f);
+    toast('フォルダを追加しました');
+  }else{
+    const f = folderById(folderModalState.id);
+    if(f){ f.name = nameVal; f.parentId = parentVal; toast('フォルダを更新しました'); }
+  }
+  persist();
+  closeOverlay('folderOverlay');
+  render();
+});
+
+function deleteFolder(id){
+  const f = folderById(id);
+  if(!f) return;
+  const descFolders = getDescendantFolderIds(id);
+  const allFolderIds = [id, ...descFolders];
+  const affectedItems = DB.items.filter(it=>allFolderIds.includes(it.folderId));
+  const msg = (descFolders.length || affectedItems.length)
+    ? `「${f.name}」には下位フォルダ${descFolders.length}件・リンク${affectedItems.length}件があります。すべて削除しますか？`
+    : `「${f.name}」を削除しますか？`;
+  if(!confirm(msg)) return;
+  DB.items = DB.items.filter(it=>!allFolderIds.includes(it.folderId));
+  DB.folders = DB.folders.filter(fl=>!allFolderIds.includes(fl.id));
+  STATE.currentPath = STATE.currentPath.filter(p=>!allFolderIds.includes(p.id));
+  persist(); render(); toast('フォルダを削除しました');
+}
+
+/* =========================================================
+   12. 設定・マスター管理モーダル
+   ========================================================= */
+function renderSettings(){
+  // categories
+  const catList = document.getElementById('catList');
+  catList.innerHTML = DB.categories.map(c=>{
+    const siteCount = DB.sites.filter(s=>s.categoryId===c.id).length;
+    return `
+    <div class="master-row">
+      <input type="text" value="${escapeHtml(c.name)}" data-cat-id="${c.id}" data-field="name">
+      <span class="pill-count">${siteCount}サイト</span>
+      <button class="icon-btn del" data-act="del-cat" data-id="${c.id}" title="削除">🗑</button>
+    </div>`;
+  }).join('');
+  catList.querySelectorAll('input[data-cat-id]').forEach(inp=>{
+    inp.addEventListener('change', ()=>{
+      const c = DB.categories.find(x=>x.id===inp.dataset.catId);
+      if(c && inp.value.trim()){ c.name = inp.value.trim(); persist(); render(); toast('カテゴリ名を更新しました'); }
+    });
+  });
+  catList.querySelectorAll('[data-act="del-cat"]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const cid = btn.dataset.id;
+      const relatedSites = DB.sites.filter(s=>s.categoryId===cid);
+      const relatedItems = DB.items.filter(it=>it.categoryId===cid);
+      if(!confirm(`このカテゴリを削除すると、サイト${relatedSites.length}件・リンク${relatedItems.length}件も削除されます。よろしいですか？`)) return;
+      const siteIds = relatedSites.map(s=>s.id);
+      DB.items = DB.items.filter(it=>it.categoryId!==cid);
+      DB.sites = DB.sites.filter(s=>s.categoryId!==cid);
+      DB.categories = DB.categories.filter(c=>c.id!==cid);
+      persist(); renderSettings(); render(); toast('カテゴリを削除しました');
+    });
+  });
+
+  // sites
+  const siteList = document.getElementById('siteList');
+  siteList.innerHTML = DB.sites.map(s=>{
+    const itemCount = DB.items.filter(it=>it.siteId===s.id).length;
+    const catOpts = DB.categories.map(c=>`<option value="${c.id}" ${c.id===s.categoryId?'selected':''}>${escapeHtml(c.name)}</option>`).join('');
+    return `
+    <div class="master-row">
+      <input type="text" value="${escapeHtml(s.name)}" data-site-id="${s.id}" data-field="name">
+      <select data-site-id="${s.id}" data-field="cat">${catOpts}</select>
+      <span class="pill-count">${itemCount}件</span>
+      <button class="icon-btn del" data-act="del-site" data-id="${s.id}" title="削除">🗑</button>
+    </div>`;
+  }).join('');
+  siteList.querySelectorAll('input[data-site-id]').forEach(inp=>{
+    inp.addEventListener('change', ()=>{
+      const s = DB.sites.find(x=>x.id===inp.dataset.siteId);
+      if(s && inp.value.trim()){ s.name = inp.value.trim(); persist(); render(); toast('サイト名を更新しました'); }
+    });
+  });
+  siteList.querySelectorAll('select[data-site-id]').forEach(sel=>{
+    sel.addEventListener('change', ()=>{
+      const s = DB.sites.find(x=>x.id===sel.dataset.siteId);
+      if(s){
+        s.categoryId = sel.value;
+        DB.items.filter(it=>it.siteId===s.id).forEach(it=>it.categoryId=sel.value);
+        persist(); render(); toast('所属カテゴリを変更しました');
+      }
+    });
+  });
+  siteList.querySelectorAll('[data-act="del-site"]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const sid = btn.dataset.id;
+      const relatedItems = DB.items.filter(it=>it.siteId===sid);
+      if(!confirm(`このサイトを削除すると、リンク${relatedItems.length}件も削除されます。よろしいですか？`)) return;
+      DB.items = DB.items.filter(it=>it.siteId!==sid);
+      DB.sites = DB.sites.filter(s=>s.id!==sid);
+      persist(); renderSettings(); render(); toast('サイトを削除しました');
+    });
+  });
+
+  // new site category dropdown
+  const newSiteCat = document.getElementById('newSiteCat');
+  newSiteCat.innerHTML = DB.categories.map(c=>`<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+}
+
+document.getElementById('btnAddCat').addEventListener('click', ()=>{
+  const inp = document.getElementById('newCatName');
+  const v = inp.value.trim();
+  if(!v){ toast('カテゴリ名を入力してください'); return; }
+  DB.categories.push({id: nextId('cat', DB.categories), name:v});
+  inp.value='';
+  persist(); renderSettings(); render(); toast('カテゴリを追加しました');
+});
+document.getElementById('btnAddSite').addEventListener('click', ()=>{
+  const inp = document.getElementById('newSiteName');
+  const v = inp.value.trim();
+  const cat = document.getElementById('newSiteCat').value;
+  if(!v){ toast('サイト名を入力してください'); return; }
+  DB.sites.push({id: nextId('site', DB.sites), name:v, categoryId:cat});
+  inp.value='';
+  persist(); renderSettings(); render(); toast('サイトを追加しました');
+});
+
+document.querySelectorAll('.stab').forEach(tab=>{
+  tab.addEventListener('click', ()=>{
+    document.querySelectorAll('.stab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.settings-pane').forEach(p=>p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('pane'+({cats:'Cats',sites:'Sites',data:'Data'})[tab.dataset.tab]).classList.add('active');
+  });
+});
+
+document.getElementById('btnSettings').addEventListener('click', ()=>{
+  renderSettings();
+  openOverlay('settingsOverlay');
+});
+
+/* =========================================================
+   13. JSON 入出力
+   ========================================================= */
+function downloadBlob(content, filename, mime){
+  const blob = new Blob([content], {type:mime});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url), 2000);
+}
+
+document.getElementById('btnJsonExport').addEventListener('click', ()=>{
+  downloadBlob(JSON.stringify(DB, null, 2), 'study_links_data.json', 'application/json');
+  toast('JSONを出力しました');
+});
+document.getElementById('btnJsonImportLabel').addEventListener('click', ()=>{
+  document.getElementById('jsonFileInput').click();
+});
+document.getElementById('jsonFileInput').addEventListener('change', (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    try{
+      const parsed = JSON.parse(reader.result);
+      if(!parsed.categories || !parsed.sites || !parsed.folders || !parsed.items) throw new Error('形式が不正です');
+      if(!confirm('現在のデータをすべて置き換えて読み込みます。よろしいですか？')) return;
+      DB = parsed;
+      STATE.expanded.clear(); STATE.currentPath=[]; STATE.addContext={type:null,id:null};
+      persist(); renderSettings(); render();
+      toast('JSONを読み込みました');
+    }catch(err){
+      alert('JSONの読み込みに失敗しました: '+err.message);
+    }
+  };
+  reader.readAsText(file, 'utf-8');
+  e.target.value = '';
+});
+
+/* =========================================================
+   14. CSV 入出力
+   ========================================================= */
+function csvEscape(v){
+  const s = String(v==null?'':v);
+  if(/[",\n]/.test(s)) return '"'+s.replace(/"/g,'""')+'"';
+  return s;
+}
+function buildCsv(){
+  const header = ['ファイルID','ファイル名/タイトル','URL','カテゴリ名','所属親フォルダID','所属親フォルダ名','フォルダパス'];
+  const rows = [header.join(',')];
+  DB.items.forEach(it=>{
+    const f = folderById(it.folderId);
+    rows.push([
+      it.id, it.title, it.url, catName(it.categoryId),
+      it.folderId||'', f? f.name:'', folderPath(it.folderId)
+    ].map(csvEscape).join(','));
+  });
+  return '\uFEFF' + rows.join('\r\n');
+}
+document.getElementById('btnCsvExport').addEventListener('click', ()=>{
+  downloadBlob(buildCsv(), 'study_links.csv', 'text/csv;charset=utf-8');
+  toast('CSVを出力しました');
+});
+
+function parseCsv(text){
+  // simple RFC4180-ish parser
+  const rows = [];
+  let row = [], field = '', inQuotes = false;
+  for(let i=0;i<text.length;i++){
+    const c = text[i];
+    if(inQuotes){
+      if(c === '"'){
+        if(text[i+1] === '"'){ field+='"'; i++; } else { inQuotes=false; }
+      }else{ field += c; }
+    }else{
+      if(c === '"'){ inQuotes = true; }
+      else if(c === ','){ row.push(field); field=''; }
+      else if(c === '\n'){ row.push(field); rows.push(row); row=[]; field=''; }
+      else if(c === '\r'){ /* skip */ }
+      else{ field += c; }
+    }
+  }
+  if(field.length || row.length){ row.push(field); rows.push(row); }
+  return rows.filter(r=>r.length>1 || (r.length===1 && r[0]!==''));
+}
+
+function ensureFolderPath(pathStr){
+  // creates folders along "A ＞ B ＞ C" if missing, returns leaf folder id
+  const seps = /[＞>]/;
+  const names = String(pathStr||'').split(seps).map(s=>s.trim()).filter(Boolean);
+  let parentId = null;
+  let leaf = null;
+  names.forEach(name=>{
+    let f = DB.folders.find(x=>x.parentId===parentId && x.name===name);
+    if(!f){
+      const sibs = DB.folders.filter(x=>x.parentId===parentId);
+      f = {id: nextId('folder', DB.folders), name, parentId, order:sibs.length};
+      DB.folders.push(f);
+    }
+    parentId = f.id;
+    leaf = f.id;
+  });
+  return leaf;
+}
+
+document.getElementById('btnCsvImportLabel').addEventListener('click', ()=>{
+  document.getElementById('csvFileInput').click();
+});
+document.getElementById('csvFileInput').addEventListener('change', (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    try{
+      const text = reader.result.replace(/^\uFEFF/, '');
+      const rows = parseCsv(text);
+      if(rows.length < 1) throw new Error('データがありません');
+      const header = rows[0];
+      const idx = {
+        id: header.indexOf('ファイルID'),
+        title: header.indexOf('ファイル名/タイトル'),
+        url: header.indexOf('URL'),
+        cat: header.indexOf('カテゴリ名'),
+        parentFolderId: header.indexOf('所属親フォルダID'),
+        parentFolderName: header.indexOf('所属親フォルダ名'),
+        path: header.indexOf('フォルダパス')
+      };
+      if(idx.title<0 || idx.url<0){ throw new Error('必須列（ファイル名/タイトル, URL）が見つかりません'); }
+      if(!confirm(`CSVから${rows.length-1}件のリンクを取り込みます。IDが一致する項目は更新、それ以外は新規追加されます。よろしいですか？`)) return;
+
+      for(let r=1;r<rows.length;r++){
+        const row = rows[r];
+        const idVal = idx.id>=0 ? row[idx.id] : '';
+        const titleVal = row[idx.title] || '(無題)';
+        const urlVal = row[idx.url] || '#';
+        const catNameVal = idx.cat>=0 ? row[idx.cat] : '';
+        const pathVal = idx.path>=0 ? row[idx.path] : '';
+
+        let cat = DB.categories.find(c=>c.name===catNameVal);
+        if(!cat && catNameVal){
+          cat = {id: nextId('cat', DB.categories), name:catNameVal};
+          DB.categories.push(cat);
+        }
+        let folderId = pathVal ? ensureFolderPath(pathVal) : null;
+        if(!folderId){
+          // fallback: put into a generic "CSV取込" folder
+          let f = DB.folders.find(x=>x.parentId===null && x.name==='CSV取込');
+          if(!f){ f = {id: nextId('folder', DB.folders), name:'CSV取込', parentId:null, order:DB.folders.filter(x=>x.parentId===null).length}; DB.folders.push(f); }
+          folderId = f.id;
+        }
+
+        let existing = idVal ? DB.items.find(it=>it.id===idVal) : null;
+        if(existing){
+          existing.title = titleVal; existing.url = urlVal;
+          if(cat) existing.categoryId = cat.id;
+          existing.folderId = folderId;
+        }else{
+          const sibs = DB.items.filter(it=>it.folderId===folderId);
+          const newItem = {
+            id: (idVal && !DB.items.find(it=>it.id===idVal)) ? idVal : nextId('item', DB.items),
+            title:titleVal, url:urlVal,
+            categoryId: cat? cat.id : (DB.categories[0]? DB.categories[0].id:'cat_01'),
+            siteId: (DB.sites.find(s=>s.categoryId===(cat?cat.id:''))||DB.sites[0]||{}).id || '',
+            folderId, order: sibs.length
+          };
+          DB.items.push(newItem);
+        }
+      }
+      persist(); renderSettings(); render();
+      toast('CSVを取り込みました');
+    }catch(err){
+      alert('CSVの読み込みに失敗しました: '+err.message);
+    }
+  };
+  reader.readAsText(file, 'utf-8');
+  e.target.value = '';
+});
+
+/* =========================================================
+   15. ツールバー操作
+   ========================================================= */
+document.getElementById('modeSeg').addEventListener('click', e=>{
+  const btn = e.target.closest('button[data-mode]');
+  if(!btn) return;
+  STATE.mode = btn.dataset.mode;
+  render();
+});
+document.getElementById('classSeg').addEventListener('click', e=>{
+  const btn = e.target.closest('button[data-class]');
+  if(!btn) return;
+  STATE.classification = btn.dataset.class;
+  STATE.currentPath = [];
+  STATE.addContext = {type:null, id:null};
+  render();
+});
+document.getElementById('searchInput').addEventListener('input', e=>{
+  STATE.search = e.target.value;
+  renderMain();
+});
+document.getElementById('sortSelect').addEventListener('change', e=>{
+  STATE.sort = e.target.value;
+  renderMain();
+});
+document.getElementById('btnNewFile').addEventListener('click', ()=>{
+  openItemModal({mode:'add'});
+});
+document.getElementById('btnNewFolder').addEventListener('click', ()=>{
+  if(STATE.classification!=='unit'){ toast('新規フォルダは単元分類でのみ追加できます'); return; }
+  openFolderModal({mode:'add'});
+});
+
+/* =========================================================
+   16. 初期表示
+   ========================================================= */
+render();
+})();
+</script>
+</body>
+</html>
