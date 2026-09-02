@@ -512,6 +512,13 @@ select.sort-select{
               <button class="btn small" id="btnFsSave">⬆ data.jsonへ保存する</button>
             </div>
           </div>
+          <div class="io-card" style="grid-column:1 / -1;">
+            <h3>🌐 公開先の data.json（GitHub Pages 等）</h3>
+            <p>GitHub Pagesなどでこのindex.htmlを公開している場合、同じフォルダに data.json を置いておくと、初めて開いたブラウザでは自動的にその内容が読み込まれます（このブラウザで一度も編集・保存していない場合のみ）。ローカルで index.html を直接開いている（file://）場合は対象外です。</p>
+            <div class="io-btns">
+              <button class="btn small" id="btnFetchReload">🔄 公開先のdata.jsonを今すぐ読み込み直す</button>
+            </div>
+          </div>
           <div class="io-card">
             <h3>JSON（全データ）</h3>
             <p>分類方法・カテゴリ・フォルダ・リンクをすべて含む構成ファイルです。別端末でも同じ構成を復元できます（手動でのファイル選択／ダウンロード）。</p>
@@ -657,6 +664,7 @@ function seedData(){
   return {classificationTypes, categories, folders, items, unitLabel:'単元'};
 }
 
+let usedSeedData = false;
 let DB = loadFromStorageOrSeed();
 function loadFromStorageOrSeed(){
   try{
@@ -666,6 +674,7 @@ function loadFromStorageOrSeed(){
       if(parsed && parsed.classificationTypes && parsed.categories && parsed.folders && parsed.items) return parsed;
     }
   }catch(e){}
+  usedSeedData = true; // ローカル保存データが無かった＝初回訪問（この後、可能ならdata.jsonを自動取得する）
   return seedData();
 }
 function persist(){
@@ -1933,6 +1942,47 @@ document.getElementById('btnFsSave').addEventListener('click', async ()=>{
     }
   }catch(e){ updateFsStatus(false); }
 })();
+
+/* =========================================================
+   14b. GitHub Pages等での data.json 自動取得（fetch）
+   ---------------------------------------------------------
+   file:// で直接開いている場合、ブラウザのセキュリティ制限により
+   fetch()は失敗する（＝catchに落ちて何も起きず、今まで通り
+   ローカル保存データ／シードデータのまま動く）。
+   http(s)://で配信されている場合（GitHub Pagesなど）は、
+   同じディレクトリのCSS/JSファイルと同様に、同じディレクトリの
+   data.jsonをそのまま取得できる。
+   ========================================================= */
+async function tryFetchDataJson(force){
+  try{
+    const res = await fetch('data.json', {cache:'no-store'});
+    if(!res.ok) throw new Error('data.jsonが見つかりません（HTTP '+res.status+'）');
+    const parsed = await res.json();
+    if(!parsed.classificationTypes || !parsed.categories || !parsed.folders || !parsed.items){
+      throw new Error('data.jsonの形式が不正です');
+    }
+    if(force){
+      if(!(await appConfirm('同じ場所のdata.jsonを読み込み、現在の表示内容を置き換えます。よろしいですか？'))) return;
+    }
+    DB = parsed;
+    persist();
+    renderSettings();
+    render();
+    toast('data.json（同じ場所のファイル）を読み込みました');
+  }catch(err){
+    if(force) toast('data.jsonの読み込みに失敗しました: '+err.message);
+    // 自動読み込み（force=false）の場合は、file://での実行時などに
+    // 失敗して当然のケースが多いため、トーストは出さず静かに無視する
+  }
+}
+document.getElementById('btnFetchReload').addEventListener('click', ()=>tryFetchDataJson(true));
+
+// ①起動時の自動読み込み：ローカル保存データがまだない（＝初回訪問）ブラウザでのみ、
+//   公開先（GitHub Pages等）のdata.jsonを自動取得する。
+//   既にこのブラウザで編集・保存済みの場合は、勝手に上書きされないよう何もしない。
+if(usedSeedData){
+  tryFetchDataJson(false);
+}
 
 /* =========================================================
    15. ツールバー操作
