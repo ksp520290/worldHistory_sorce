@@ -51,19 +51,19 @@
       "id": "cat_006",
       "name": "研伸館ジオヒストリー",
       "typeId": "ctype_02",
-      "order": 0
+      "order": 4
     },
     {
       "id": "cat_007",
       "name": "グシャの世界史探求",
       "typeId": "ctype_02",
-      "order": 1
+      "order": 5
     },
     {
       "id": "cat_008",
       "name": "相関図・関係図",
       "typeId": "ctype_02",
-      "order": 2
+      "order": 6
     },
     {
       "id": "cat_009",
@@ -73,39 +73,39 @@
     },
     {
       "id": "cat_010",
-      "name": "スタサプTry it",
+      "name": "Try it",
       "typeId": "ctype_02",
-      "order": 4
+      "order": 2
     },
     {
       "id": "cat_011",
       "name": "世界史の窓",
       "typeId": "ctype_02",
-      "order": 5
+      "order": 7
     },
     {
       "id": "cat_012",
       "name": "窓ノート目次",
       "typeId": "ctype_02",
-      "order": 6
+      "order": 8
     },
     {
       "id": "cat_013",
       "name": "農三世界史 授業プリント",
       "typeId": "ctype_02",
-      "order": 7
+      "order": 9
     },
     {
       "id": "cat_014",
       "name": "教科書",
       "typeId": "ctype_02",
-      "order": 8
+      "order": 0
     },
     {
       "id": "cat_015",
       "name": "資料集",
       "typeId": "ctype_02",
-      "order": 9
+      "order": 1
     },
     {
       "id": "cat_016",
@@ -148,6 +148,18 @@
       "name": "アメリカ",
       "typeId": "ctype_03",
       "order": 5
+    },
+    {
+      "id": "cat_023",
+      "name": "その他",
+      "typeId": "ctype_01",
+      "order": 5
+    },
+    {
+      "id": "cat_024",
+      "name": "全体",
+      "typeId": "ctype_03",
+      "order": 6
     }
   ],
   "folders": [
@@ -212,27 +224,21 @@
       "order": 2
     },
     {
-      "id": "folder_011",
-      "name": "第1編 古代",
-      "parentId": "folder_022",
-      "order": 0
-    },
-    {
       "id": "folder_012",
-      "name": "第2編 中世・近世",
-      "parentId": "folder_022",
+      "name": "第2編 諸地域の交流と再編（中世・近世）",
+      "parentId": null,
       "order": 1
     },
     {
       "id": "folder_013",
-      "name": "第3編 近代",
-      "parentId": "folder_022",
+      "name": "第3編 一体化していく世界（近代）",
+      "parentId": null,
       "order": 2
     },
     {
       "id": "folder_014",
-      "name": "第4編 現代",
-      "parentId": "folder_022",
+      "name": "第4編 グローバル化と地球的課題（現代）",
+      "parentId": null,
       "order": 3
     },
     {
@@ -278,118 +284,106 @@
       "order": 3
     },
     {
-      "id": "folder_022",
-      "name": "教科書（世界史）",
-      "parentId": null,
-      "order": 4
-    },
-    {
-      "id": "folder_023",
-      "name": "時代→地域→サイト",
-      "parentId": null,
-      "order": 1
-    },
-    {
-      "id": "folder_024",
-      "name": "日本",
-      "parentId": "folder_036",
-      "order": 0
-    },
-    {
       "id": "folder_025",
-      "name": "1.古代",
-      "parentId": "folder_023",
-      "order": 1
-    },
-    {
-      "id": "folder_026",
-      "name": "2.中世",
-      "parentId": "folder_023",
-      "order": 2
-    },
-    {
-      "id": "folder_027",
-      "name": "3.近世",
-      "parentId": "folder_023",
-      "order": 3
-    },
-    {
-      "id": "folder_028",
-      "name": "4.近代",
-      "parentId": "folder_023",
-      "order": 4
-    },
-    {
-      "id": "folder_029",
-      "name": "5.現代",
-      "parentId": "folder_023",
-      "order": 5
-    },
-    {
-      "id": "folder_030",
-      "name": "中国",
-      "parentId": "folder_036",
-      "order": 1
-    },
-    {
-      "id": "folder_031",
-      "name": "国分類",
+      "name": "第1編 諸地域の歴史的特質（古代）",
       "parentId": null,
-      "order": 2
-    },
-    {
-      "id": "folder_032",
-      "name": "ヨーロッパ",
-      "parentId": "folder_031",
-      "order": 0
-    },
-    {
-      "id": "folder_033",
-      "name": "東アジア",
-      "parentId": "folder_031",
       "order": 1
-    },
-    {
-      "id": "folder_034",
-      "name": "朝鮮",
-      "parentId": "folder_036",
-      "order": 2
-    },
-    {
-      "id": "folder_035",
-      "name": "東南アジア",
-      "parentId": "folder_028",
-      "order": 3
-    },
-    {
-      "id": "folder_036",
-      "name": "東アジア",
-      "parentId": "folder_028",
-      "order": 4
     },
     {
       "id": "folder_037",
-      "name": "01.オリエント（西アジア・地中海世界）",
+      "name": "第2章　西アジアと地中海世界周辺",
       "parentId": "folder_025",
       "order": 0
     },
     {
       "id": "folder_038",
-      "name": "03.南アジア",
+      "name": "第3章　南アジア",
       "parentId": "folder_025",
       "order": 1
     },
     {
       "id": "folder_039",
-      "name": "02.東アジア",
+      "name": "第5章　東アジアと中央ユーラシア",
       "parentId": "folder_025",
       "order": 2
     },
     {
       "id": "folder_040",
-      "name": "04.その他地域",
+      "name": "第4章　東南アジア",
       "parentId": "folder_025",
       "order": 3
+    },
+    {
+      "id": "folder_041",
+      "name": "第1章　古代文明の出現",
+      "parentId": "folder_025",
+      "order": 4
+    },
+    {
+      "id": "folder_042",
+      "name": "第6章　アフリカ、オセアニア、古アメリカ",
+      "parentId": "folder_025",
+      "order": 5
+    },
+    {
+      "id": "folder_043",
+      "name": "第07章　イスラーム世界の拡大と繁栄",
+      "parentId": "folder_012",
+      "order": 0
+    },
+    {
+      "id": "folder_044",
+      "name": "第08章　中世ヨーロッパ",
+      "parentId": "folder_012",
+      "order": 1
+    },
+    {
+      "id": "folder_045",
+      "name": "第09章　中華世界の変容とモンゴル帝国",
+      "parentId": "folder_012",
+      "order": 2
+    },
+    {
+      "id": "folder_046",
+      "name": "第10章　インド洋海域世界の発展と東南アジア",
+      "parentId": "folder_012",
+      "order": 3
+    },
+    {
+      "id": "folder_047",
+      "name": "第11章　大航海時代と世界の一体化",
+      "parentId": "folder_012",
+      "order": 4
+    },
+    {
+      "id": "folder_048",
+      "name": "第12章　ユーラシア諸帝国の繁栄",
+      "parentId": "folder_012",
+      "order": 5
+    },
+    {
+      "id": "folder_049",
+      "name": "第13章　主権国家体制の形成と地球規模での交易の拡大",
+      "parentId": "folder_012",
+      "order": 6
+    },
+    {
+      "id": "folder_050",
+      "name": "第20章　冷静の世界化と国際制度",
+      "parentId": "folder_014",
+      "order": 0
+    },
+    {
+      "id": "folder_051",
+      "name": "第21章　冷戦の変容・終結と経済のグローバル化",
+      "parentId": "folder_014",
+      "order": 1
+    },
+    {
+      "id": "folder_052",
+      "name": "第22章　21世紀の地球的課題と人類社会",
+      "parentId": "folder_014",
+      "order": 2
     }
   ],
   "items": [
@@ -769,7 +763,7 @@
       "id": "item_032",
       "title": "00.人類の出現と農耕のはじまり",
       "url": "https://learn.studysapuri.jp/ja/topics/63d9ef728e4d2f00013dee85/lessons/1",
-      "folderId": "folder_025",
+      "folderId": "folder_041",
       "classifications": {
         "ctype_01": "cat_001",
         "ctype_02": "cat_009"
@@ -780,19 +774,19 @@
       "id": "item_033",
       "title": "01.古代オリエント文明１",
       "url": "https://learn.studysapuri.jp/ja/topics/63d9ef728e4d2f00013deecd/lessons/1",
-      "folderId": "folder_037",
+      "folderId": "folder_041",
       "classifications": {
         "ctype_01": "cat_001",
         "ctype_02": "cat_009",
         "ctype_03": "cat_020"
       },
-      "order": 1
+      "order": 2
     },
     {
       "id": "item_034",
       "title": "02.古代オリエント文明２",
       "url": "https://learn.studysapuri.jp/ja/topics/63d9ef728e4d2f00013def15/lessons/1",
-      "folderId": "folder_037",
+      "folderId": "folder_041",
       "classifications": {
         "ctype_01": "cat_001",
         "ctype_02": "cat_009",
@@ -816,13 +810,13 @@
       "id": "item_036",
       "title": "01.南アジアの古代文明",
       "url": "https://learn.studysapuri.jp/ja/topics/63d9ef728e4d2f00013defa5/lessons/1",
-      "folderId": "folder_038",
+      "folderId": "folder_041",
       "classifications": {
         "ctype_01": "cat_001",
         "ctype_02": "cat_009",
         "ctype_03": "cat_019"
       },
-      "order": 0
+      "order": 1
     },
     {
       "id": "item_037",
@@ -898,7 +892,7 @@
     },
     {
       "id": "item_043",
-      "title": "09.古代ローマ世界",
+      "title": "09.古代ローマ世界３",
       "url": "https://learn.studysapuri.jp/ja/topics/63d9ef738e4d2f00013df19f/lessons/1",
       "folderId": "folder_037",
       "classifications": {
@@ -972,13 +966,13 @@
       "id": "item_049",
       "title": "02.南北アメリカの古代文明",
       "url": "https://learn.studysapuri.jp/ja/topics/63d9ef738e4d2f00013df2c1/lessons/1",
-      "folderId": "folder_040",
+      "folderId": "folder_042",
       "classifications": {
         "ctype_01": "cat_001",
         "ctype_02": "cat_009",
         "ctype_03": "cat_022"
       },
-      "order": 1
+      "order": 0
     },
     {
       "id": "item_050",
@@ -1027,6 +1021,90 @@
         "ctype_03": "cat_017"
       },
       "order": 4
+    },
+    {
+      "id": "item_054",
+      "title": "序章",
+      "url": "https://drive.google.com/file/d/1tXuLneGi52S0RVMpGmu9HT1JzMCoFG_c/view?usp=drive_link",
+      "folderId": "folder_025",
+      "classifications": {
+        "ctype_01": "cat_023",
+        "ctype_02": "cat_014",
+        "ctype_03": "cat_024"
+      },
+      "order": 0
+    },
+    {
+      "id": "item_055",
+      "title": "第1章　教科書",
+      "url": "https://drive.google.com/file/d/1NXDKT8-e4paX3wU5BGVJTxi-jH13rV9_/view?usp=drive_link",
+      "folderId": "folder_041",
+      "classifications": {
+        "ctype_01": "cat_001",
+        "ctype_02": "cat_014",
+        "ctype_03": "cat_024"
+      },
+      "order": 4
+    },
+    {
+      "id": "item_056",
+      "title": "第2章　教科書",
+      "url": "https://drive.google.com/file/d/1jsi5UBIEkdeeYUkxYLJWqEmB4_GTygn9/view?usp=drive_link",
+      "folderId": "folder_037",
+      "classifications": {
+        "ctype_01": "cat_001",
+        "ctype_02": "cat_014",
+        "ctype_03": "cat_020"
+      },
+      "order": 7
+    },
+    {
+      "id": "item_057",
+      "title": "第3章　教科書",
+      "url": "https://drive.google.com/file/d/12MFa9tIshalMvMx47yEhQYU6d9PIjwQK/view?usp=drive_link",
+      "folderId": "folder_038",
+      "classifications": {
+        "ctype_01": "cat_001",
+        "ctype_02": "cat_014",
+        "ctype_03": "cat_019"
+      },
+      "order": 4
+    },
+    {
+      "id": "item_058",
+      "title": "第4章　東南アジア",
+      "url": "https://drive.google.com/file/d/1M3Md0QIFrTpfAluAn2-VnbNbW_hVafED/view?usp=drive_link",
+      "folderId": "folder_040",
+      "classifications": {
+        "ctype_01": "cat_001",
+        "ctype_02": "cat_014",
+        "ctype_03": "cat_018"
+      },
+      "order": 1
+    },
+    {
+      "id": "item_059",
+      "title": "第5章　教科書",
+      "url": "https://drive.google.com/file/d/1l9X12n-1VzA8cPQerTRbh_AQxT8UBqF0/view?usp=drive_link",
+      "folderId": "folder_039",
+      "classifications": {
+        "ctype_01": "cat_001",
+        "ctype_02": "cat_014",
+        "ctype_03": "cat_017"
+      },
+      "order": 5
+    },
+    {
+      "id": "item_060",
+      "title": "第6章　教科書",
+      "url": "https://drive.google.com/file/d/1M9G7hXe5CSfgqEGUdEmiCts_N1lDn46F/view?usp=drive_link",
+      "folderId": "folder_042",
+      "classifications": {
+        "ctype_01": "cat_001",
+        "ctype_02": "cat_014",
+        "ctype_03": "cat_017"
+      },
+      "order": 1
     }
   ],
   "unitLabel": "教科書"
