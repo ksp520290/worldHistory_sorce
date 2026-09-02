@@ -1,77 +1,153 @@
 {
-  "categories": [
+  "classificationTypes": [
     {
-      "id": "cat_01",
-      "name": "主要内容"
+      "id": "ctype_01",
+      "name": "時代区分",
+      "order": 0
     },
     {
-      "id": "cat_02",
-      "name": "詳細（授業）"
+      "id": "ctype_02",
+      "name": "情報源",
+      "order": 1
     },
     {
-      "id": "cat_03",
-      "name": "補足教科書"
-    },
-    {
-      "id": "cat_04",
-      "name": "本情報"
+      "id": "ctype_03",
+      "name": "地域",
+      "order": 2
     }
   ],
-  "sites": [
+  "categories": [
     {
-      "id": "site_001",
+      "id": "cat_001",
+      "name": "古代",
+      "typeId": "ctype_01",
+      "order": 0
+    },
+    {
+      "id": "cat_002",
+      "name": "中世",
+      "typeId": "ctype_01",
+      "order": 1
+    },
+    {
+      "id": "cat_003",
+      "name": "近世",
+      "typeId": "ctype_01",
+      "order": 2
+    },
+    {
+      "id": "cat_004",
+      "name": "近代",
+      "typeId": "ctype_01",
+      "order": 3
+    },
+    {
+      "id": "cat_005",
+      "name": "現代",
+      "typeId": "ctype_01",
+      "order": 4
+    },
+    {
+      "id": "cat_006",
       "name": "研伸館ジオヒストリー",
-      "categoryId": "cat_01"
+      "typeId": "ctype_02",
+      "order": 0
     },
     {
-      "id": "site_002",
+      "id": "cat_007",
       "name": "グシャの世界史探求",
-      "categoryId": "cat_01"
+      "typeId": "ctype_02",
+      "order": 1
     },
     {
-      "id": "site_003",
+      "id": "cat_008",
       "name": "相関図・関係図",
-      "categoryId": "cat_02"
+      "typeId": "ctype_02",
+      "order": 2
     },
     {
-      "id": "site_004",
+      "id": "cat_009",
       "name": "スタサプスタンダード",
-      "categoryId": "cat_02"
+      "typeId": "ctype_02",
+      "order": 3
     },
     {
-      "id": "site_005",
+      "id": "cat_010",
       "name": "スタサプTry it",
-      "categoryId": "cat_02"
+      "typeId": "ctype_02",
+      "order": 4
     },
     {
-      "id": "site_006",
+      "id": "cat_011",
       "name": "世界史の窓",
-      "categoryId": "cat_03"
+      "typeId": "ctype_02",
+      "order": 5
     },
     {
-      "id": "site_007",
+      "id": "cat_012",
       "name": "窓ノート目次",
-      "categoryId": "cat_03"
+      "typeId": "ctype_02",
+      "order": 6
     },
     {
-      "id": "site_008",
+      "id": "cat_013",
       "name": "農三世界史 授業プリント",
-      "categoryId": "cat_03"
+      "typeId": "ctype_02",
+      "order": 7
     },
     {
-      "id": "site_009",
+      "id": "cat_014",
       "name": "教科書",
-      "categoryId": "cat_04"
+      "typeId": "ctype_02",
+      "order": 8
     },
     {
-      "id": "site_010",
+      "id": "cat_015",
       "name": "資料集",
-      "categoryId": "cat_04"
+      "typeId": "ctype_02",
+      "order": 9
     },
     {
-      "id": "site_011",
+      "id": "cat_016",
       "name": "参考書",
-      "categoryId": "cat_04"
+      "typeId": "ctype_02",
+      "order": 10
+    },
+    {
+      "id": "cat_017",
+      "name": "東アジア",
+      "typeId": "ctype_03",
+      "order": 0
+    },
+    {
+      "id": "cat_018",
+      "name": "東南アジア",
+      "typeId": "ctype_03",
+      "order": 1
+    },
+    {
+      "id": "cat_019",
+      "name": "南アジア",
+      "typeId": "ctype_03",
+      "order": 2
+    },
+    {
+      "id": "cat_020",
+      "name": "西アジア（中東）",
+      "typeId": "ctype_03",
+      "order": 3
+    },
+    {
+      "id": "cat_021",
+      "name": "ヨーロッパ",
+      "typeId": "ctype_03",
+      "order": 4
+    },
+    {
+      "id": "cat_022",
+      "name": "アメリカ",
+      "typeId": "ctype_03",
+      "order": 5
     }
   ],
   "folders": [
@@ -137,25 +213,25 @@
     },
     {
       "id": "folder_011",
-      "name": "第1編　古代",
+      "name": "第1編 古代",
       "parentId": "folder_022",
       "order": 0
     },
     {
       "id": "folder_012",
-      "name": "第2編　中世・近世",
+      "name": "第2編 中世・近世",
       "parentId": "folder_022",
       "order": 1
     },
     {
       "id": "folder_013",
-      "name": "第3編　近代",
+      "name": "第3編 近代",
       "parentId": "folder_022",
       "order": 2
     },
     {
       "id": "folder_014",
-      "name": "第4編　現代",
+      "name": "第4編 現代",
       "parentId": "folder_022",
       "order": 3
     },
@@ -209,7 +285,7 @@
     },
     {
       "id": "folder_023",
-      "name": "時代分類",
+      "name": "時代→地域→サイト",
       "parentId": null,
       "order": 1
     },
@@ -290,6 +366,30 @@
       "name": "東アジア",
       "parentId": "folder_028",
       "order": 4
+    },
+    {
+      "id": "folder_037",
+      "name": "01.オリエント（西アジア・地中海世界）",
+      "parentId": "folder_025",
+      "order": 0
+    },
+    {
+      "id": "folder_038",
+      "name": "03.南アジア",
+      "parentId": "folder_025",
+      "order": 1
+    },
+    {
+      "id": "folder_039",
+      "name": "02.東アジア",
+      "parentId": "folder_025",
+      "order": 2
+    },
+    {
+      "id": "folder_040",
+      "name": "04.その他地域",
+      "parentId": "folder_025",
+      "order": 3
     }
   ],
   "items": [
@@ -298,8 +398,11 @@
       "title": "20-1 連合国から国際連合へ",
       "url": "https://example.com/history/20-1%20%E9%80%A3%E5%90%88%E5%9B%BD%E3%81%8B%E3%82%89",
       "folderId": "folder_002",
-      "categoryId": "cat_01",
-      "siteId": "site_001",
+      "classifications": {
+        "ctype_01": "cat_005",
+        "ctype_02": "cat_006",
+        "ctype_03": "cat_017"
+      },
       "order": 0
     },
     {
@@ -307,8 +410,11 @@
       "title": "アメリカの軍事力・経済力",
       "url": "https://example.com/history/%E3%82%A2%E3%83%A1%E3%83%AA%E3%82%AB%E3%81%AE%E8%BB%8D%E4%BA%8B%E5%8A%9B%E3%83%BB%E7%B5%8C",
       "folderId": "folder_002",
-      "categoryId": "cat_01",
-      "siteId": "site_002",
+      "classifications": {
+        "ctype_01": "cat_005",
+        "ctype_02": "cat_007",
+        "ctype_03": "cat_017"
+      },
       "order": 1
     },
     {
@@ -316,8 +422,11 @@
       "title": "ソ連圏の形成",
       "url": "https://example.com/history/%E3%82%BD%E9%80%A3%E5%9C%8F%E3%81%AE%E5%BD%A2%E6%88%90",
       "folderId": "folder_002",
-      "categoryId": "cat_02",
-      "siteId": "site_003",
+      "classifications": {
+        "ctype_01": "cat_005",
+        "ctype_02": "cat_008",
+        "ctype_03": "cat_017"
+      },
       "order": 2
     },
     {
@@ -325,8 +434,11 @@
       "title": "西欧諸国での革新政党の躍進",
       "url": "https://example.com/history/%E8%A5%BF%E6%AC%A7%E8%AB%B8%E5%9B%BD%E3%81%A7%E3%81%AE%E9%9D%A9%E6%96%B0%E6%94%BF%E5%85%9A",
       "folderId": "folder_002",
-      "categoryId": "cat_02",
-      "siteId": "site_004",
+      "classifications": {
+        "ctype_01": "cat_005",
+        "ctype_02": "cat_009",
+        "ctype_03": "cat_017"
+      },
       "order": 3
     },
     {
@@ -334,8 +446,11 @@
       "title": "ヨーロッパにおける冷戦の形成",
       "url": "https://example.com/history/%E3%83%A8%E3%83%BC%E3%83%AD%E3%83%83%E3%83%91%E3%81%AB%E3%81%8A%E3%81%91%E3%82%8B%E5%86%B7",
       "folderId": "folder_002",
-      "categoryId": "cat_02",
-      "siteId": "site_005",
+      "classifications": {
+        "ctype_01": "cat_005",
+        "ctype_02": "cat_010",
+        "ctype_03": "cat_017"
+      },
       "order": 4
     },
     {
@@ -343,8 +458,11 @@
       "title": "対枢軸国講和と戦後処理",
       "url": "https://example.com/history/%E5%AF%BE%E6%9E%A2%E8%BB%B8%E5%9B%BD%E8%AC%9B%E5%92%8C%E3%81%A8%E6%88%A6%E5%BE%8C%E5%87%A6",
       "folderId": "folder_002",
-      "categoryId": "cat_03",
-      "siteId": "site_006",
+      "classifications": {
+        "ctype_01": "cat_005",
+        "ctype_02": "cat_011",
+        "ctype_03": "cat_017"
+      },
       "order": 5
     },
     {
@@ -352,8 +470,11 @@
       "title": "アジア・太平洋戦争と日本の敗戦",
       "url": "https://example.com/history/%E3%82%A2%E3%82%B8%E3%82%A2%E3%83%BB%E5%A4%AA%E5%B9%B3%E6%B4%8B%E6%88%A6%E4%BA%89%E3%81%A8",
       "folderId": "folder_003",
-      "categoryId": "cat_03",
-      "siteId": "site_007",
+      "classifications": {
+        "ctype_01": "cat_005",
+        "ctype_02": "cat_012",
+        "ctype_03": "cat_017"
+      },
       "order": 0
     },
     {
@@ -361,8 +482,11 @@
       "title": "カイロ宣言と東アジアの戦後構想",
       "url": "https://example.com/history/%E3%82%AB%E3%82%A4%E3%83%AD%E5%AE%A3%E8%A8%80%E3%81%A8%E6%9D%B1%E3%82%A2%E3%82%B8%E3%82%A2",
       "folderId": "folder_003",
-      "categoryId": "cat_03",
-      "siteId": "site_008",
+      "classifications": {
+        "ctype_01": "cat_005",
+        "ctype_02": "cat_013",
+        "ctype_03": "cat_017"
+      },
       "order": 1
     },
     {
@@ -370,8 +494,11 @@
       "title": "19-4 ついにアメリカが動いた！日米の開戦！",
       "url": "https://example.com/history/19-4%20%E3%81%A4%E3%81%84%E3%81%AB%E3%82%A2%E3%83%A1",
       "folderId": "folder_003",
-      "categoryId": "cat_04",
-      "siteId": "site_009",
+      "classifications": {
+        "ctype_01": "cat_005",
+        "ctype_02": "cat_014",
+        "ctype_03": "cat_017"
+      },
       "order": 2
     },
     {
@@ -379,8 +506,11 @@
       "title": "ポツダム宣言と日本の敗戦",
       "url": "https://example.com/history/%E3%83%9D%E3%83%84%E3%83%80%E3%83%A0%E5%AE%A3%E8%A8%80%E3%81%A8%E6%97%A5%E6%9C%AC%E3%81%AE",
       "folderId": "folder_003",
-      "categoryId": "cat_04",
-      "siteId": "site_010",
+      "classifications": {
+        "ctype_01": "cat_005",
+        "ctype_02": "cat_015",
+        "ctype_03": "cat_017"
+      },
       "order": 3
     },
     {
@@ -388,8 +518,11 @@
       "title": "「日本よ、出ていけ！」対日占領統治",
       "url": "https://example.com/history/%E3%80%8C%E6%97%A5%E6%9C%AC%E3%82%88%E3%80%81%E5%87%BA%E3%81%A6%E3%81%84%E3%81%91%EF%BC%81",
       "folderId": "folder_003",
-      "categoryId": "cat_04",
-      "siteId": "site_011",
+      "classifications": {
+        "ctype_01": "cat_005",
+        "ctype_02": "cat_016",
+        "ctype_03": "cat_017"
+      },
       "order": 4
     },
     {
@@ -397,8 +530,11 @@
       "title": "「日本の戦後処理！」帝国の解体と分断国家の形成",
       "url": "https://example.com/history/%E3%80%8C%E6%97%A5%E6%9C%AC%E3%81%AE%E6%88%A6%E5%BE%8C%E5%87%A6%E7%90%86%EF%BC%81%E3%80%8D",
       "folderId": "folder_003",
-      "categoryId": "cat_01",
-      "siteId": "site_001",
+      "classifications": {
+        "ctype_01": "cat_005",
+        "ctype_02": "cat_006",
+        "ctype_03": "cat_017"
+      },
       "order": 5
     },
     {
@@ -406,8 +542,11 @@
       "title": "19-4 大日本帝国の解体と連合国の接収",
       "url": "https://example.com/history/19-4%20%E5%A4%A7%E6%97%A5%E6%9C%AC%E5%B8%9D%E5%9B%BD",
       "folderId": "folder_004",
-      "categoryId": "cat_01",
-      "siteId": "site_002",
+      "classifications": {
+        "ctype_01": "cat_005",
+        "ctype_02": "cat_007",
+        "ctype_03": "cat_017"
+      },
       "order": 0
     },
     {
@@ -415,8 +554,11 @@
       "title": "引き揚げと人の移動",
       "url": "https://example.com/history/%E5%BC%95%E3%81%8D%E6%8F%9A%E3%81%92%E3%81%A8%E4%BA%BA%E3%81%AE%E7%A7%BB%E5%8B%95",
       "folderId": "folder_004",
-      "categoryId": "cat_02",
-      "siteId": "site_003",
+      "classifications": {
+        "ctype_01": "cat_005",
+        "ctype_02": "cat_008",
+        "ctype_03": "cat_017"
+      },
       "order": 1
     },
     {
@@ -424,8 +566,11 @@
       "title": "朝鮮半島の分断と占領統治",
       "url": "https://example.com/history/%E6%9C%9D%E9%AE%AE%E5%8D%8A%E5%B3%B6%E3%81%AE%E5%88%86%E6%96%AD%E3%81%A8%E5%8D%A0%E9%A0%98",
       "folderId": "folder_004",
-      "categoryId": "cat_02",
-      "siteId": "site_004",
+      "classifications": {
+        "ctype_01": "cat_005",
+        "ctype_02": "cat_009",
+        "ctype_03": "cat_017"
+      },
       "order": 2
     },
     {
@@ -433,8 +578,11 @@
       "title": "20-1 台湾の接収と２・２８事件",
       "url": "https://example.com/history/20-1%20%E5%8F%B0%E6%B9%BE%E3%81%AE%E6%8E%A5%E5%8F%8E",
       "folderId": "folder_004",
-      "categoryId": "cat_02",
-      "siteId": "site_005",
+      "classifications": {
+        "ctype_01": "cat_005",
+        "ctype_02": "cat_010",
+        "ctype_03": "cat_017"
+      },
       "order": 3
     },
     {
@@ -442,8 +590,11 @@
       "title": "ソ連の満州接収と国共内戦",
       "url": "https://example.com/history/%E3%82%BD%E9%80%A3%E3%81%AE%E6%BA%80%E5%B7%9E%E6%8E%A5%E5%8F%8E%E3%81%A8%E5%9B%BD%E5%85%B1",
       "folderId": "folder_004",
-      "categoryId": "cat_03",
-      "siteId": "site_006",
+      "classifications": {
+        "ctype_01": "cat_005",
+        "ctype_02": "cat_011",
+        "ctype_03": "cat_017"
+      },
       "order": 4
     },
     {
@@ -451,8 +602,11 @@
       "title": "「国民党ｖｓ共産党」",
       "url": "https://example.com/history/%E3%80%8C%E5%9B%BD%E6%B0%91%E5%85%9A%EF%BD%96%EF%BD%93%E5%85%B1%E7%94%A3%E5%85%9A%E3%80%8D",
       "folderId": "folder_004",
-      "categoryId": "cat_03",
-      "siteId": "site_007",
+      "classifications": {
+        "ctype_01": "cat_005",
+        "ctype_02": "cat_012",
+        "ctype_03": "cat_017"
+      },
       "order": 5
     },
     {
@@ -460,8 +614,11 @@
       "title": "中華人民共和国の成立",
       "url": "https://example.com/history/%E4%B8%AD%E8%8F%AF%E4%BA%BA%E6%B0%91%E5%85%B1%E5%92%8C%E5%9B%BD%E3%81%AE%E6%88%90%E7%AB%8B",
       "folderId": "folder_004",
-      "categoryId": "cat_03",
-      "siteId": "site_008",
+      "classifications": {
+        "ctype_01": "cat_005",
+        "ctype_02": "cat_013",
+        "ctype_03": "cat_017"
+      },
       "order": 6
     },
     {
@@ -469,8 +626,11 @@
       "title": "「２つの中国」",
       "url": "https://example.com/history/%E3%80%8C%EF%BC%92%E3%81%A4%E3%81%AE%E4%B8%AD%E5%9B%BD%E3%80%8D",
       "folderId": "folder_004",
-      "categoryId": "cat_04",
-      "siteId": "site_009",
+      "classifications": {
+        "ctype_01": "cat_005",
+        "ctype_02": "cat_014",
+        "ctype_03": "cat_017"
+      },
       "order": 7
     },
     {
@@ -478,8 +638,11 @@
       "title": "揺れ動く中東",
       "url": "https://example.com/history/%E6%8F%BA%E3%82%8C%E5%8B%95%E3%81%8F%E4%B8%AD%E6%9D%B1",
       "folderId": "folder_006",
-      "categoryId": "cat_04",
-      "siteId": "site_010",
+      "classifications": {
+        "ctype_01": "cat_005",
+        "ctype_02": "cat_015",
+        "ctype_03": "cat_020"
+      },
       "order": 0
     },
     {
@@ -487,8 +650,11 @@
       "title": "20-2 「西アジア諸地域の動き」",
       "url": "https://example.com/history/20-2%20%E3%80%8C%E8%A5%BF%E3%82%A2%E3%82%B8%E3%82%A2",
       "folderId": "folder_006",
-      "categoryId": "cat_04",
-      "siteId": "site_011",
+      "classifications": {
+        "ctype_01": "cat_005",
+        "ctype_02": "cat_016",
+        "ctype_03": "cat_020"
+      },
       "order": 1
     },
     {
@@ -496,8 +662,11 @@
       "title": "南アジア諸国の独立",
       "url": "https://example.com/history/%E5%8D%97%E3%82%A2%E3%82%B8%E3%82%A2%E8%AB%B8%E5%9B%BD%E3%81%AE%E7%8B%AC%E7%AB%8B",
       "folderId": "folder_006",
-      "categoryId": "cat_01",
-      "siteId": "site_001",
+      "classifications": {
+        "ctype_01": "cat_005",
+        "ctype_02": "cat_006",
+        "ctype_03": "cat_019"
+      },
       "order": 2
     },
     {
@@ -505,8 +674,11 @@
       "title": "「インドの独立達成！」",
       "url": "https://example.com/history/%E3%80%8C%E3%82%A4%E3%83%B3%E3%83%89%E3%81%AE%E7%8B%AC%E7%AB%8B%E9%81%94%E6%88%90%EF%BC%81",
       "folderId": "folder_006",
-      "categoryId": "cat_01",
-      "siteId": "site_002",
+      "classifications": {
+        "ctype_01": "cat_005",
+        "ctype_02": "cat_007",
+        "ctype_03": "cat_019"
+      },
       "order": 3
     },
     {
@@ -514,8 +686,11 @@
       "title": "東南アジア諸国の独立",
       "url": "https://example.com/history/%E6%9D%B1%E5%8D%97%E3%82%A2%E3%82%B8%E3%82%A2%E8%AB%B8%E5%9B%BD%E3%81%AE%E7%8B%AC%E7%AB%8B",
       "folderId": "folder_006",
-      "categoryId": "cat_02",
-      "siteId": "site_003",
+      "classifications": {
+        "ctype_01": "cat_005",
+        "ctype_02": "cat_008",
+        "ctype_03": "cat_018"
+      },
       "order": 4
     },
     {
@@ -523,8 +698,11 @@
       "title": "「ベトナムの独立を認めないフランス！」",
       "url": "https://example.com/history/%E3%80%8C%E3%83%99%E3%83%88%E3%83%8A%E3%83%A0%E3%81%AE%E7%8B%AC%E7%AB%8B%E3%82%92%E8%AA%8D",
       "folderId": "folder_006",
-      "categoryId": "cat_02",
-      "siteId": "site_004",
+      "classifications": {
+        "ctype_01": "cat_005",
+        "ctype_02": "cat_009",
+        "ctype_03": "cat_018"
+      },
       "order": 5
     },
     {
@@ -532,8 +710,11 @@
       "title": "20-2 「米ソの代理戦争！朝鮮戦争の勃発！！」",
       "url": "https://example.com/history/20-2%20%E3%80%8C%E7%B1%B3%E3%82%BD%E3%81%AE%E4%BB%A3",
       "folderId": "folder_008",
-      "categoryId": "cat_02",
-      "siteId": "site_005",
+      "classifications": {
+        "ctype_01": "cat_005",
+        "ctype_02": "cat_010",
+        "ctype_03": "cat_017"
+      },
       "order": 0
     },
     {
@@ -541,8 +722,11 @@
       "title": "20-3 「核を保有すると、発言力が強くなる！？」",
       "url": "https://example.com/history/20-3%20%E3%80%8C%E6%A0%B8%E3%82%92%E4%BF%9D%E6%9C%89",
       "folderId": "folder_009",
-      "categoryId": "cat_03",
-      "siteId": "site_006",
+      "classifications": {
+        "ctype_01": "cat_005",
+        "ctype_02": "cat_011",
+        "ctype_03": "cat_017"
+      },
       "order": 0
     },
     {
@@ -550,8 +734,11 @@
       "title": "東アジアの安全保障条約",
       "url": "https://example.com/history/%E6%9D%B1%E3%82%A2%E3%82%B8%E3%82%A2%E3%81%AE%E5%AE%89%E5%85%A8%E4%BF%9D%E9%9A%9C%E6%9D%A1",
       "folderId": "folder_009",
-      "categoryId": "cat_03",
-      "siteId": "site_007",
+      "classifications": {
+        "ctype_01": "cat_005",
+        "ctype_02": "cat_012",
+        "ctype_03": "cat_017"
+      },
       "order": 1
     },
     {
@@ -559,8 +746,11 @@
       "title": "「ソ連がアメリカに歩み寄る！？」",
       "url": "https://example.com/history/%E3%80%8C%E3%82%BD%E9%80%A3%E3%81%8C%E3%82%A2%E3%83%A1%E3%83%AA%E3%82%AB%E3%81%AB%E6%AD%A9",
       "folderId": "folder_009",
-      "categoryId": "cat_03",
-      "siteId": "site_008",
+      "classifications": {
+        "ctype_01": "cat_005",
+        "ctype_02": "cat_013",
+        "ctype_03": "cat_017"
+      },
       "order": 2
     },
     {
@@ -568,9 +758,276 @@
       "title": "「毛沢東の暴走！」社会主義中国の国家建設",
       "url": "https://example.com/history/%E3%80%8C%E6%AF%9B%E6%B2%A2%E6%9D%B1%E3%81%AE%E6%9A%B4%E8%B5%B0%EF%BC%81%E3%80%8D%E7%A4%BE",
       "folderId": "folder_010",
-      "categoryId": "cat_04",
-      "siteId": "site_009",
+      "classifications": {
+        "ctype_01": "cat_005",
+        "ctype_02": "cat_014",
+        "ctype_03": "cat_017"
+      },
       "order": 0
+    },
+    {
+      "id": "item_032",
+      "title": "00.人類の出現と農耕のはじまり",
+      "url": "https://learn.studysapuri.jp/ja/topics/63d9ef728e4d2f00013dee85/lessons/1",
+      "folderId": "folder_025",
+      "classifications": {
+        "ctype_01": "cat_001",
+        "ctype_02": "cat_009"
+      },
+      "order": 0
+    },
+    {
+      "id": "item_033",
+      "title": "01.古代オリエント文明１",
+      "url": "https://learn.studysapuri.jp/ja/topics/63d9ef728e4d2f00013deecd/lessons/1",
+      "folderId": "folder_037",
+      "classifications": {
+        "ctype_01": "cat_001",
+        "ctype_02": "cat_009",
+        "ctype_03": "cat_020"
+      },
+      "order": 1
+    },
+    {
+      "id": "item_034",
+      "title": "02.古代オリエント文明２",
+      "url": "https://learn.studysapuri.jp/ja/topics/63d9ef728e4d2f00013def15/lessons/1",
+      "folderId": "folder_037",
+      "classifications": {
+        "ctype_01": "cat_001",
+        "ctype_02": "cat_009",
+        "ctype_03": "cat_020"
+      },
+      "order": 3
+    },
+    {
+      "id": "item_035",
+      "title": "03.オリエントの統一と分裂",
+      "url": "https://learn.studysapuri.jp/ja/topics/63d9ef728e4d2f00013def5d/lessons/1",
+      "folderId": "folder_037",
+      "classifications": {
+        "ctype_01": "cat_001",
+        "ctype_02": "cat_009",
+        "ctype_03": "cat_020"
+      },
+      "order": 0
+    },
+    {
+      "id": "item_036",
+      "title": "01.南アジアの古代文明",
+      "url": "https://learn.studysapuri.jp/ja/topics/63d9ef728e4d2f00013defa5/lessons/1",
+      "folderId": "folder_038",
+      "classifications": {
+        "ctype_01": "cat_001",
+        "ctype_02": "cat_009",
+        "ctype_03": "cat_019"
+      },
+      "order": 0
+    },
+    {
+      "id": "item_037",
+      "title": "01.中国の古代文明",
+      "url": "https://learn.studysapuri.jp/ja/topics/63d9ef728e4d2f00013defed/lessons/1",
+      "folderId": "folder_039",
+      "classifications": {
+        "ctype_01": "cat_001",
+        "ctype_02": "cat_009",
+        "ctype_03": "cat_017"
+      },
+      "order": 0
+    },
+    {
+      "id": "item_038",
+      "title": "04.イラン文明の興亡",
+      "url": "https://learn.studysapuri.jp/ja/topics/63d9ef728e4d2f00013df037/lessons/1",
+      "folderId": "folder_037",
+      "classifications": {
+        "ctype_01": "cat_001",
+        "ctype_02": "cat_009",
+        "ctype_03": "cat_020"
+      },
+      "order": 2
+    },
+    {
+      "id": "item_039",
+      "title": "05.古代ギリシアの諸ポリス",
+      "url": "https://learn.studysapuri.jp/ja/topics/63d9ef728e4d2f00013df07f/lessons/1",
+      "folderId": "folder_037",
+      "classifications": {
+        "ctype_01": "cat_001",
+        "ctype_02": "cat_009",
+        "ctype_03": "cat_021"
+      },
+      "order": 4
+    },
+    {
+      "id": "item_040",
+      "title": "06.古代ギリシアの諸ポリス",
+      "url": "https://learn.studysapuri.jp/ja/topics/63d9ef738e4d2f00013df0c7/lessons/1",
+      "folderId": "folder_037",
+      "classifications": {
+        "ctype_01": "cat_001",
+        "ctype_02": "cat_009",
+        "ctype_03": "cat_021"
+      },
+      "order": 5
+    },
+    {
+      "id": "item_041",
+      "title": "07.古代ローマ世界１",
+      "url": "https://learn.studysapuri.jp/ja/topics/63d9ef738e4d2f00013df10f/lessons/1",
+      "folderId": "folder_037",
+      "classifications": {
+        "ctype_01": "cat_001",
+        "ctype_02": "cat_009",
+        "ctype_03": "cat_021"
+      },
+      "order": 6
+    },
+    {
+      "id": "item_042",
+      "title": "08.古代ローマ世界２",
+      "url": "https://learn.studysapuri.jp/ja/topics/63d9ef738e4d2f00013df157/lessons/1",
+      "folderId": "folder_037",
+      "classifications": {
+        "ctype_01": "cat_001",
+        "ctype_02": "cat_009",
+        "ctype_03": "cat_021"
+      },
+      "order": 7
+    },
+    {
+      "id": "item_043",
+      "title": "09.古代ローマ世界",
+      "url": "https://learn.studysapuri.jp/ja/topics/63d9ef738e4d2f00013df19f/lessons/1",
+      "folderId": "folder_037",
+      "classifications": {
+        "ctype_01": "cat_001",
+        "ctype_02": "cat_009",
+        "ctype_03": "cat_021"
+      },
+      "order": 8
+    },
+    {
+      "id": "item_044",
+      "title": "02.古代インドの王朝１",
+      "url": "https://learn.studysapuri.jp/ja/topics/63d9ef738e4d2f00013df1e9/lessons/1",
+      "folderId": "folder_038",
+      "classifications": {
+        "ctype_01": "cat_001",
+        "ctype_02": "cat_009",
+        "ctype_03": "cat_019"
+      },
+      "order": 1
+    },
+    {
+      "id": "item_045",
+      "title": "03.古代インドの王朝２",
+      "url": "https://learn.studysapuri.jp/ja/topics/63d9ef738e4d2f00013df231/lessons/1",
+      "folderId": "folder_038",
+      "classifications": {
+        "ctype_01": "cat_001",
+        "ctype_02": "cat_009",
+        "ctype_03": "cat_019"
+      },
+      "order": 2
+    },
+    {
+      "id": "item_046",
+      "title": "04.古代インドの王朝３",
+      "url": "https://learn.studysapuri.jp/ja/topics/63d9ef738e4d2f00013df231/lessons/1",
+      "folderId": "folder_038",
+      "classifications": {
+        "ctype_01": "cat_001",
+        "ctype_02": "cat_009",
+        "ctype_03": "cat_019"
+      },
+      "order": 3
+    },
+    {
+      "id": "item_047",
+      "title": "05.南インドの古代王朝",
+      "url": "https://learn.studysapuri.jp/ja/topics/63d9ef738e4d2f00013df279/lessons/1",
+      "folderId": "folder_038",
+      "classifications": {
+        "ctype_01": "cat_001",
+        "ctype_02": "cat_009",
+        "ctype_03": "cat_019"
+      },
+      "order": 4
+    },
+    {
+      "id": "item_048",
+      "title": "01.東南アジアの古代王朝",
+      "url": "https://learn.studysapuri.jp/ja/topics/63d9ef738e4d2f00013df279/lessons/2",
+      "folderId": "folder_040",
+      "classifications": {
+        "ctype_01": "cat_001",
+        "ctype_02": "cat_009",
+        "ctype_03": "cat_018"
+      },
+      "order": 0
+    },
+    {
+      "id": "item_049",
+      "title": "02.南北アメリカの古代文明",
+      "url": "https://learn.studysapuri.jp/ja/topics/63d9ef738e4d2f00013df2c1/lessons/1",
+      "folderId": "folder_040",
+      "classifications": {
+        "ctype_01": "cat_001",
+        "ctype_02": "cat_009",
+        "ctype_03": "cat_022"
+      },
+      "order": 1
+    },
+    {
+      "id": "item_050",
+      "title": "02.春秋戦国時代と中国の思想",
+      "url": "https://learn.studysapuri.jp/ja/topics/63d9ef738e4d2f00013df30b/lessons/1",
+      "folderId": "folder_039",
+      "classifications": {
+        "ctype_01": "cat_001",
+        "ctype_02": "cat_009",
+        "ctype_03": "cat_017"
+      },
+      "order": 1
+    },
+    {
+      "id": "item_051",
+      "title": "03.秦と漢の中国統一１",
+      "url": "https://learn.studysapuri.jp/ja/topics/63d9ef738e4d2f00013df353/lessons/1",
+      "folderId": "folder_039",
+      "classifications": {
+        "ctype_01": "cat_001",
+        "ctype_02": "cat_009",
+        "ctype_03": "cat_017"
+      },
+      "order": 2
+    },
+    {
+      "id": "item_052",
+      "title": "04.秦と漢の中国統一２",
+      "url": "https://learn.studysapuri.jp/ja/topics/63d9ef738e4d2f00013df353/lessons/1",
+      "folderId": "folder_039",
+      "classifications": {
+        "ctype_01": "cat_001",
+        "ctype_02": "cat_009",
+        "ctype_03": "cat_017"
+      },
+      "order": 3
+    },
+    {
+      "id": "item_053",
+      "title": "05.古代の東アジア世界",
+      "url": "https://learn.studysapuri.jp/ja/topics/63d9ef738e4d2f00013df3e3/lessons/1",
+      "folderId": "folder_039",
+      "classifications": {
+        "ctype_01": "cat_001",
+        "ctype_02": "cat_009",
+        "ctype_03": "cat_017"
+      },
+      "order": 4
     }
-  ]
+  ],
+  "unitLabel": "教科書"
 }
