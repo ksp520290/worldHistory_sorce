@@ -329,6 +329,8 @@ select.sort-select{
 .master-row{
   display:flex;align-items:center;gap:8px;padding:7px 4px;border-bottom:1px solid var(--border);font-size:13px;
 }
+.master-row.drag-over{outline:2px dashed var(--link);background:#F0F6FE;}
+.master-drag-handle{cursor:grab;color:#BBB;font-size:14px;user-select:none;padding:0 2px;}
 .master-row input[type=text]{flex:1;padding:6px 8px;border:1px solid var(--border-strong);border-radius:6px;font-size:13px;}
 .master-row select{padding:6px 8px;border:1px solid var(--border-strong);border-radius:6px;font-size:13px;}
 .master-add-row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
@@ -382,10 +384,7 @@ select.sort-select{
         <button data-mode="accordion">アコーディオン</button>
         <button data-mode="drive">ドライブ階層</button>
       </div>
-      <div class="seg" id="classSeg">
-        <button data-class="unit">単元分類</button>
-        <button data-class="site">Webサイト分類</button>
-      </div>
+      <div class="seg" id="classSeg"></div>
       <div class="spacer"></div>
       <button class="btn primary" id="btnNewFile">＋ 新規ファイル</button>
       <button class="btn" id="btnNewFolder">＋ 新規フォルダ</button>
@@ -426,18 +425,9 @@ select.sort-select{
         <label>URL</label>
         <input type="url" id="fUrl" placeholder="https://example.com/...">
       </div>
-      <div class="field-row">
-        <div class="field">
-          <label>カテゴリ</label>
-          <select id="fCategory"></select>
-        </div>
-        <div class="field">
-          <label>Webサイト</label>
-          <select id="fSite"></select>
-        </div>
-      </div>
+      <div id="fClassFields"></div>
       <div class="field">
-        <label>所属フォルダ（単元）</label>
+        <label id="fFolderFieldLabel">所属フォルダ（単元）</label>
         <select id="fFolder"></select>
         <div class="field-hint" id="fFolderHint"></div>
       </div>
@@ -474,36 +464,57 @@ select.sort-select{
 <!-- Settings Modal -->
 <div class="modal-overlay hidden" id="settingsOverlay">
   <div class="modal modal-lg" id="settingsModal">
-    <div class="modal-head"><h2>設定・マスター管理画面</h2><button class="modal-close" data-close="settingsOverlay">✕</button></div>
+    <div class="modal-head">
+      <h2>設定・マスター管理画面</h2>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <button class="btn accent small" id="btnSaveOrder" title="分類方法・カテゴリの並び順を保存して、新規ファイル作成時などの表示順に反映します">⇅ 並び順を保存</button>
+        <button class="modal-close" data-close="settingsOverlay">✕</button>
+      </div>
+    </div>
     <div class="modal-body">
       <div class="settings-tabs">
-        <button class="stab active" data-tab="cats">カテゴリ管理</button>
-        <button class="stab" data-tab="sites">Webサイト管理</button>
+        <button class="stab active" data-tab="classTypes">分類管理</button>
+        <button class="stab" data-tab="classify">分類方法</button>
         <button class="stab" data-tab="data">データ入出力（JSON / CSV）</button>
       </div>
 
-      <div class="settings-pane active" id="paneCats">
-        <div id="catList"></div>
+      <div class="settings-pane active" id="paneClassTypes">
+        <div class="master-row" style="border-bottom:2px solid var(--border-strong);margin-bottom:8px;">
+          <label style="font-weight:700;font-size:12.5px;color:var(--text-sub);white-space:nowrap;">フォルダ分類（単元）の名称</label>
+          <input type="text" id="unitLabelInput">
+        </div>
+        <p class="field-hint" style="margin-bottom:10px;">分類方法（時代区分・情報源・地域など）そのものを管理します。行をドラッグすると並び替えられます（右上の「並び順を保存」で確定）。</p>
+        <div id="classTypeList"></div>
         <div class="master-add-row">
-          <input type="text" id="newCatName" placeholder="新しいカテゴリ名">
-          <button class="btn primary small" id="btnAddCat">＋ カテゴリ追加</button>
+          <input type="text" id="newClassTypeName" placeholder="新しい分類方法名（例：地域）">
+          <button class="btn primary small" id="btnAddClassType">＋ 分類方法追加</button>
         </div>
       </div>
 
-      <div class="settings-pane" id="paneSites">
-        <div id="siteList"></div>
+      <div class="settings-pane" id="paneClassify">
+        <p class="field-hint" style="margin-bottom:10px;">分類方法を選び、その中のカテゴリ（例：時代区分なら「古代・中世…」）を管理します。行をドラッグすると並び替えられます（右上の「並び順を保存」で確定）。</p>
+        <div class="seg" id="classifyTypeToggle" style="margin-bottom:12px;"></div>
+        <div id="classifyCatList"></div>
         <div class="master-add-row">
-          <input type="text" id="newSiteName" placeholder="新しいWebサイト名">
-          <select id="newSiteCat"></select>
-          <button class="btn primary small" id="btnAddSite">＋ サイト追加</button>
+          <input type="text" id="newClassifyCatName" placeholder="新しいカテゴリ名">
+          <button class="btn primary small" id="btnAddClassifyCat">＋ カテゴリ追加</button>
         </div>
       </div>
 
       <div class="settings-pane" id="paneData">
         <div class="data-io-grid">
+          <div class="io-card" style="grid-column:1 / -1;">
+            <h3>📂 ローカルファイル連携（data.json）<span id="fsStatus" style="font-weight:400;font-size:11px;color:var(--text-sub);margin-left:8px;">未連携</span></h3>
+            <p>対応ブラウザ（Chrome / Edge）では、同じフォルダの data.json を直接読み書きできます。初回のみ「連携する」でファイルを選んでください。連携すると次回起動時から自動で読み込まれます（ブラウザの権限保持期間による）。Safari / Firefoxではこの機能は使えないため、下のJSON出力・入力（ファイルのダウンロード／アップロード）をご利用ください。</p>
+            <div class="io-btns">
+              <button class="btn primary small" id="btnFsConnect">🔗 data.jsonと連携する</button>
+              <button class="btn small" id="btnFsReload">⬇ data.jsonから読込み直す</button>
+              <button class="btn small" id="btnFsSave">⬆ data.jsonへ保存する</button>
+            </div>
+          </div>
           <div class="io-card">
             <h3>JSON（全データ）</h3>
-            <p>フォルダ・サイト・カテゴリ・リンクをすべて含む構成ファイルです。別端末でも同じ構成を復元できます。</p>
+            <p>分類方法・カテゴリ・フォルダ・リンクをすべて含む構成ファイルです。別端末でも同じ構成を復元できます（手動でのファイル選択／ダウンロード）。</p>
             <div class="io-btns">
               <button class="btn primary small" id="btnJsonExport">出力（ダウンロード）</button>
               <button class="btn small" id="btnJsonImportLabel">入力（読み込み）</button>
@@ -512,7 +523,7 @@ select.sort-select{
           </div>
           <div class="io-card">
             <h3>CSV（リンク一覧）</h3>
-            <p>ファイルID, タイトル, URL, カテゴリ名, 親フォルダID, 親フォルダ名, フォルダパスを出力・取込します。</p>
+            <p>ファイルID, タイトル, URL, 各分類方法のカテゴリ名, 親フォルダID, 親フォルダ名, フォルダパスを出力・取込します。</p>
             <div class="io-btns">
               <button class="btn primary small" id="btnCsvExport">出力（ダウンロード）</button>
               <button class="btn small" id="btnCsvImportLabel">入力（読み込み）</button>
@@ -530,6 +541,19 @@ select.sort-select{
 
 <div id="toast"></div>
 
+<!-- Confirm Dialog (native confirm() の代替。環境によるブロックを避けるため) -->
+<div class="modal-overlay hidden" id="confirmOverlay">
+  <div class="modal" style="max-width:380px;">
+    <div class="modal-body" style="padding-top:22px;">
+      <p id="confirmMessage" style="font-size:13.5px;line-height:1.7;margin:0;color:var(--text-main);white-space:pre-wrap;"></p>
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost" id="confirmCancelBtn">キャンセル</button>
+      <button class="btn accent" id="confirmOkBtn">実行する</button>
+    </div>
+  </div>
+</div>
+
 <script>
 (function(){
 "use strict";
@@ -538,24 +562,34 @@ select.sort-select{
    1. データモデル & 初期シードデータ
    ========================================================= */
 function seedData(){
-  const categories = [
-    {id:'cat_01', name:'主要内容'},
-    {id:'cat_02', name:'詳細（授業）'},
-    {id:'cat_03', name:'補足教科書'},
-    {id:'cat_04', name:'本情報'}
+  const classificationTypes = [
+    {id:'ctype_01', name:'時代区分', order:0},
+    {id:'ctype_02', name:'情報源', order:1},
+    {id:'ctype_03', name:'地域', order:2}
   ];
-  const sites = [
-    {id:'site_001', name:'研伸館ジオヒストリー', categoryId:'cat_01'},
-    {id:'site_002', name:'グシャの世界史探求', categoryId:'cat_01'},
-    {id:'site_003', name:'相関図・関係図', categoryId:'cat_02'},
-    {id:'site_004', name:'スタサプスタンダード', categoryId:'cat_02'},
-    {id:'site_005', name:'スタサプTry it', categoryId:'cat_02'},
-    {id:'site_006', name:'世界史の窓', categoryId:'cat_03'},
-    {id:'site_007', name:'窓ノート目次', categoryId:'cat_03'},
-    {id:'site_008', name:'農三世界史 授業プリント', categoryId:'cat_03'},
-    {id:'site_009', name:'教科書', categoryId:'cat_04'},
-    {id:'site_010', name:'資料集', categoryId:'cat_04'},
-    {id:'site_011', name:'参考書', categoryId:'cat_04'}
+  const categories = [
+    {id:'cat_001', name:'古代', typeId:'ctype_01', order:0},
+    {id:'cat_002', name:'中世', typeId:'ctype_01', order:1},
+    {id:'cat_003', name:'近世', typeId:'ctype_01', order:2},
+    {id:'cat_004', name:'近代', typeId:'ctype_01', order:3},
+    {id:'cat_005', name:'現代', typeId:'ctype_01', order:4},
+    {id:'cat_006', name:'研伸館ジオヒストリー', typeId:'ctype_02', order:0},
+    {id:'cat_007', name:'グシャの世界史探求', typeId:'ctype_02', order:1},
+    {id:'cat_008', name:'相関図・関係図', typeId:'ctype_02', order:2},
+    {id:'cat_009', name:'スタサプスタンダード', typeId:'ctype_02', order:3},
+    {id:'cat_010', name:'スタサプTry it', typeId:'ctype_02', order:4},
+    {id:'cat_011', name:'世界史の窓', typeId:'ctype_02', order:5},
+    {id:'cat_012', name:'窓ノート目次', typeId:'ctype_02', order:6},
+    {id:'cat_013', name:'農三世界史 授業プリント', typeId:'ctype_02', order:7},
+    {id:'cat_014', name:'教科書', typeId:'ctype_02', order:8},
+    {id:'cat_015', name:'資料集', typeId:'ctype_02', order:9},
+    {id:'cat_016', name:'参考書', typeId:'ctype_02', order:10},
+    {id:'cat_017', name:'東アジア', typeId:'ctype_03', order:0},
+    {id:'cat_018', name:'東南アジア', typeId:'ctype_03', order:1},
+    {id:'cat_019', name:'南アジア', typeId:'ctype_03', order:2},
+    {id:'cat_020', name:'西アジア（中東）', typeId:'ctype_03', order:3},
+    {id:'cat_021', name:'ヨーロッパ', typeId:'ctype_03', order:4},
+    {id:'cat_022', name:'アメリカ', typeId:'ctype_03', order:5}
   ];
   const folders = [
     {id:'folder_001', name:'戦後秩序構想と冷戦の形成', parentId:null, order:0},
@@ -602,15 +636,15 @@ function seedData(){
     ['folder_009','「ソ連がアメリカに歩み寄る！？」'],
     ['folder_010','「毛沢東の暴走！」社会主義中国の国家建設']
   ];
+  const infoSourceIds = categories.filter(c=>c.typeId==='ctype_02').map(c=>c.id);
   const items = rawItems.map((r,idx)=>{
-    const site = sites[idx % sites.length];
+    const infoSourceId = infoSourceIds[idx % infoSourceIds.length];
     return {
       id:'item_'+String(idx+1).padStart(3,'0'),
       title:r[1],
       url:'https://example.com/history/'+encodeURIComponent(r[1].slice(0,10)),
       folderId:r[0],
-      categoryId:site.categoryId,
-      siteId:site.id,
+      classifications:{ ctype_01:'cat_005', ctype_02:infoSourceId, ctype_03:'cat_017' },
       order:0
     };
   });
@@ -620,22 +654,22 @@ function seedData(){
     byFolder[it.folderId] = byFolder[it.folderId] || 0;
     it.order = byFolder[it.folderId]++;
   });
-  return {categories, sites, folders, items};
+  return {classificationTypes, categories, folders, items, unitLabel:'単元'};
 }
 
 let DB = loadFromStorageOrSeed();
 function loadFromStorageOrSeed(){
   try{
-    const raw = localStorage.getItem('studyLinkDB_v1');
+    const raw = localStorage.getItem('studyLinkDB_v2');
     if(raw){
       const parsed = JSON.parse(raw);
-      if(parsed && parsed.categories && parsed.folders && parsed.items && parsed.sites) return parsed;
+      if(parsed && parsed.classificationTypes && parsed.categories && parsed.folders && parsed.items) return parsed;
     }
   }catch(e){}
   return seedData();
 }
 function persist(){
-  try{ localStorage.setItem('studyLinkDB_v1', JSON.stringify(DB)); }catch(e){}
+  try{ localStorage.setItem('studyLinkDB_v2', JSON.stringify(DB)); }catch(e){}
 }
 
 /* =========================================================
@@ -678,7 +712,10 @@ function idNum(id){
   return m? parseInt(m[1],10) : 0;
 }
 function catName(id){ const c = DB.categories.find(x=>x.id===id); return c? c.name : '(未分類)'; }
-function siteName(id){ const s = DB.sites.find(x=>x.id===id); return s? s.name : '(未設定)'; }
+function ctypeNameById(id){ const t = DB.classificationTypes.find(x=>x.id===id); return t? t.name : ''; }
+function categoriesOfType(typeId){ return DB.categories.filter(c=>c.typeId===typeId).sort((a,b)=>(a.order||0)-(b.order||0)); }
+function sortedClassificationTypes(){ return DB.classificationTypes.slice().sort((a,b)=>(a.order||0)-(b.order||0)); }
+function unitLabel(){ return (DB.unitLabel && String(DB.unitLabel).trim()) || '単元'; }
 function folderById(id){ return DB.folders.find(f=>f.id===id); }
 
 function folderPath(folderId){
@@ -715,19 +752,14 @@ function getChildNodes(parentId, classification){
     const items = DB.items.filter(it=>it.folderId===parentId).map(it=>({id:it.id,type:'item',name:it.title,order:it.order,ref:it}));
     return {containers:folders, items:items};
   }else{
+    // classification is a classificationType id (e.g. 時代区分/情報源/地域)
     if(parentId===null){
-      const cats = DB.categories.map(c=>({id:c.id,type:'category',name:c.name,order:0}));
+      const cats = categoriesOfType(classification).map(c=>({id:c.id,type:'category',name:c.name,order:0}));
       return {containers:cats, items:[]};
     }
-    if(String(parentId).startsWith('cat_')){
-      const sites = DB.sites.filter(s=>s.categoryId===parentId).map(s=>({id:s.id,type:'site',name:s.name,order:0}));
-      return {containers:sites, items:[]};
-    }
-    if(String(parentId).startsWith('site_')){
-      const items = DB.items.filter(it=>it.siteId===parentId).map(it=>({id:it.id,type:'item',name:it.title,order:it.order,ref:it}));
-      return {containers:[], items:items};
-    }
-    return {containers:[], items:[]};
+    const items = DB.items.filter(it=> it.classifications && it.classifications[classification]===parentId)
+      .map(it=>({id:it.id,type:'item',name:it.title,order:it.order,ref:it}));
+    return {containers:[], items:items};
   }
 }
 function containerChildCount(node, classification){
@@ -764,8 +796,12 @@ function searchAllItems(query){
   const q = query.trim().toLowerCase();
   if(!q) return [];
   return DB.items.filter(it=>{
+    const classNames = sortedClassificationTypes().map(ct=>{
+      const cid = it.classifications && it.classifications[ct.id];
+      return cid ? catName(cid) : '';
+    }).join(' ');
     const hay = [
-      it.title, it.url, catName(it.categoryId), siteName(it.siteId), folderPath(it.folderId), it.id
+      it.title, it.url, classNames, folderPath(it.folderId), it.id
     ].join(' ').toLowerCase();
     return hay.includes(q);
   });
@@ -780,9 +816,23 @@ function render(){
   renderMain();
 }
 
+function renderClassSeg(){
+  if(STATE.classification!=='unit' && !DB.classificationTypes.find(ct=>ct.id===STATE.classification)){
+    STATE.classification = 'unit';
+    STATE.currentPath = [];
+  }
+  const seg = document.getElementById('classSeg');
+  let html = `<button data-class="unit">${escapeHtml(unitLabel())}分類</button>`;
+  sortedClassificationTypes().forEach(ct=>{
+    html += `<button data-class="${ct.id}">${escapeHtml(ct.name)}分類</button>`;
+  });
+  seg.innerHTML = html;
+  seg.querySelectorAll('button').forEach(b=>b.classList.toggle('active', b.dataset.class===STATE.classification));
+}
+
 function renderToolbarState(){
+  renderClassSeg();
   document.querySelectorAll('#modeSeg button').forEach(b=>b.classList.toggle('active', b.dataset.mode===STATE.mode));
-  document.querySelectorAll('#classSeg button').forEach(b=>b.classList.toggle('active', b.dataset.class===STATE.classification));
   document.getElementById('btnNewFolder').style.display = (STATE.classification==='unit') ? '' : 'none';
   document.getElementById('sortSelect').value = STATE.sort;
 }
@@ -791,7 +841,7 @@ function renderBreadcrumb(){
   const bar = document.getElementById('breadcrumbBar');
   if(STATE.mode!=='drive' || STATE.search.trim()){ bar.classList.add('hidden'); bar.innerHTML=''; return; }
   bar.classList.remove('hidden');
-  const rootLabel = STATE.classification==='unit' ? '📁 ホーム（単元）' : '📁 ホーム（Webサイト分類）';
+  const rootLabel = STATE.classification==='unit' ? `📁 ホーム（${escapeHtml(unitLabel())}）` : `📁 ホーム（${escapeHtml(ctypeNameById(STATE.classification))}）`;
   let html = `<span class="crumb ${STATE.currentPath.length===0?'current':''}" data-crumb-idx="-1">${rootLabel}</span>`;
   STATE.currentPath.forEach((p,idx)=>{
     const isLast = idx===STATE.currentPath.length-1;
@@ -816,14 +866,20 @@ function renderMain(){
 function nodeIcon(type){
   if(type==='folder') return '📁';
   if(type==='category') return '🗂️';
-  if(type==='site') return '🌐';
   return '🔗';
 }
 
 function buildItemRow(item, depth){
-  const meta = STATE.classification==='unit'
-    ? `<span class="cat-tag">${escapeHtml(catName(item.categoryId))}</span>${escapeHtml(siteName(item.siteId))}`
-    : `${escapeHtml(folderPath(item.folderId))}`;
+  let meta;
+  if(STATE.classification==='unit'){
+    const tags = sortedClassificationTypes().map(ct=>{
+      const cid = item.classifications && item.classifications[ct.id];
+      return cid ? `<span class="cat-tag">${escapeHtml(catName(cid))}</span>` : '';
+    }).join('');
+    meta = tags || '－';
+  }else{
+    meta = `${escapeHtml(folderPath(item.folderId))}`;
+  }
   return `
   <div class="node-block">
     <div class="item-row" draggable="true" data-id="${item.id}" data-type="item">
@@ -861,7 +917,7 @@ function buildAccordionContainer(node, depth){
       <span class="drag-handle">⋮⋮</span>
       <span class="node-icon toggle-caret ${isOpen?'open':''}">▶</span>
       <span class="node-name" title="${escapeHtml(node.name)}">${nodeIcon(node.type)}&nbsp;${escapeHtml(node.name)}<span class="node-count">${count}</span></span>
-      <span class="meta-col">${node.type==='folder'? '単元フォルダ' : (node.type==='category'? 'カテゴリ' : 'Webサイト')}</span>
+      <span class="meta-col">${node.type==='folder'? escapeHtml(unitLabel())+'フォルダ' : (ctypeNameById(STATE.classification)+'のカテゴリ')}</span>
       <span class="url-col"></span>
       <span class="row-actions">
         <button class="icon-btn add" data-act="add-here" data-id="${node.id}" data-type="${node.type}" title="ここに追加">＋</button>
@@ -923,6 +979,15 @@ function renderSearchResults(q){
   }
   return `<div class="drive-list-title">検索結果（${sorted.length}件）</div>` + sorted.map(n=>{
     const item = n.ref;
+    const tagsHtml = sortedClassificationTypes().map(ct=>{
+      const cid = item.classifications && item.classifications[ct.id];
+      return cid ? `<span class="cat-tag">${escapeHtml(catName(cid))}</span>` : '';
+    }).join('');
+    const pathParts = sortedClassificationTypes().map(ct=>{
+      const cid = item.classifications && item.classifications[ct.id];
+      return cid ? `${escapeHtml(ct.name)}: ${escapeHtml(catName(cid))}` : null;
+    }).filter(Boolean);
+    pathParts.push(escapeHtml(folderPath(item.folderId)));
     return `
     <div class="node-block">
       <div class="item-row" draggable="false" data-id="${item.id}" data-type="item">
@@ -930,9 +995,9 @@ function renderSearchResults(q){
         <span class="node-icon">🔗</span>
         <span class="node-name" title="${escapeHtml(item.title)}">
           ${escapeHtml(item.title)}
-          <div class="search-path">${escapeHtml(catName(item.categoryId))} ＞ ${escapeHtml(siteName(item.siteId))} ｜ ${escapeHtml(folderPath(item.folderId))}</div>
+          <div class="search-path">${pathParts.join(' ｜ ')}</div>
         </span>
-        <span class="meta-col"><span class="cat-tag">${escapeHtml(catName(item.categoryId))}</span>${escapeHtml(siteName(item.siteId))}</span>
+        <span class="meta-col">${tagsHtml}</span>
         <span class="url-col"><a href="${escapeHtml(item.url)}" target="_blank" rel="noopener">${escapeHtml(item.url)}</a></span>
         <span class="row-actions">
           <button class="icon-btn" data-act="edit-item" data-id="${item.id}" title="編集">✎</button>
@@ -969,7 +1034,7 @@ function bindRowEvents(){
     el.addEventListener('click',(e)=>{
       e.stopPropagation();
       STATE.addContext = {type:el.dataset.type, id:el.dataset.id};
-      if(el.dataset.type==='folder' || el.dataset.type==='category' || el.dataset.type==='site'){
+      if(el.dataset.type==='folder' || el.dataset.type==='category'){
         openItemModal({mode:'add'});
       }
     });
@@ -1081,28 +1146,20 @@ function handleDrop(draggedId, draggedType, targetId, targetType){
       }
     }
   }else{
-    // site classification
-    if(draggedType==='item'){
-      const dragged = DB.items.find(i=>i.id===draggedId);
-      if(targetType==='site'){
-        const site = DB.sites.find(s=>s.id===targetId);
-        dragged.siteId = targetId; dragged.categoryId = site.categoryId;
-        const sibs = DB.items.filter(x=>x.siteId===targetId);
-        renumber(sibs.sort((a,b)=>(a.order||0)-(b.order||0)));
-      }else if(targetType==='category'){
-        toast('カテゴリではなく、その中のWebサイトへドロップしてください');
-        return;
-      }else if(targetType==='item'){
-        const targetItem = DB.items.find(i=>i.id===targetId);
-        if(dragged.siteId===targetItem.siteId){
-          reorderSiblings('item','siteId',dragged.siteId,draggedId,targetId);
-        }else{
-          dragged.siteId = targetItem.siteId; dragged.categoryId = targetItem.categoryId;
-        }
-      }
-    }else{
-      toast('サイト分類ではフォルダの移動はできません');
+    // 分類方法（時代区分／情報源／地域など）によるドロップ
+    const ctypeId = STATE.classification;
+    if(draggedType!=='item'){
+      toast('この分類方法ではフォルダの移動はできません');
       return;
+    }
+    const dragged = DB.items.find(i=>i.id===draggedId);
+    if(!dragged.classifications) dragged.classifications = {};
+    if(targetType==='category'){
+      dragged.classifications[ctypeId] = targetId;
+    }else if(targetType==='item'){
+      const targetItem = DB.items.find(i=>i.id===targetId);
+      const targetCat = targetItem.classifications ? targetItem.classifications[ctypeId] : null;
+      if(targetCat) dragged.classifications[ctypeId] = targetCat;
     }
   }
   persist();
@@ -1115,6 +1172,28 @@ function handleDrop(draggedId, draggedType, targetId, targetType){
    ========================================================= */
 function openOverlay(id){ document.getElementById(id).classList.remove('hidden'); }
 function closeOverlay(id){ document.getElementById(id).classList.add('hidden'); }
+
+/* ---- カスタム確認ダイアログ（window.confirm()の代替） ----
+   一部の環境ではネイティブconfirm()がブロック・無視されることがあるため、
+   自前のモーダルで確認を取る。Promise<boolean>を返す。 */
+let _confirmResolver = null;
+function appConfirm(message){
+  return new Promise(resolve=>{
+    document.getElementById('confirmMessage').textContent = message;
+    _confirmResolver = resolve;
+    openOverlay('confirmOverlay');
+  });
+}
+document.getElementById('confirmOkBtn').addEventListener('click', ()=>{
+  closeOverlay('confirmOverlay');
+  const r = _confirmResolver; _confirmResolver = null;
+  if(r) r(true);
+});
+document.getElementById('confirmCancelBtn').addEventListener('click', ()=>{
+  closeOverlay('confirmOverlay');
+  const r = _confirmResolver; _confirmResolver = null;
+  if(r) r(false);
+});
 document.querySelectorAll('[data-close]').forEach(btn=>{
   btn.addEventListener('click', ()=>closeOverlay(btn.dataset.close));
 });
@@ -1146,14 +1225,20 @@ function flattenFolders({restrictToId=null, excludeIds=[]}={}){
    ========================================================= */
 let itemModalState = {mode:'add', id:null};
 
-function populateCategorySelect(sel, restrictCatId){
-  sel.innerHTML = (restrictCatId ? DB.categories.filter(c=>c.id===restrictCatId) : DB.categories)
-    .map(c=>`<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
-}
-function populateSiteSelect(sel, categoryId, restrictSiteId){
-  let list = DB.sites.filter(s=>s.categoryId===categoryId);
-  if(restrictSiteId) list = list.filter(s=>s.id===restrictSiteId);
-  sel.innerHTML = list.map(s=>`<option value="${s.id}">${escapeHtml(s.name)}</option>`).join('');
+function populateClassificationSelects(container){
+  container.innerHTML = sortedClassificationTypes().map(ct=>{
+    return `<div class="field">
+      <label>${escapeHtml(ct.name)}</label>
+      <select data-ctype-select="${ct.id}"></select>
+    </div>`;
+  }).join('');
+  sortedClassificationTypes().forEach(ct=>{
+    const sel = container.querySelector(`select[data-ctype-select="${ct.id}"]`);
+    const cats = categoriesOfType(ct.id);
+    sel.innerHTML = cats.length
+      ? cats.map(c=>`<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('')
+      : `<option value="">（カテゴリがありません。先に設定画面で追加してください）</option>`;
+  });
 }
 function populateFolderSelectEl(sel, restrictToId){
   const list = flattenFolders({restrictToId});
@@ -1167,28 +1252,24 @@ function populateFolderSelectEl(sel, restrictToId){
 function openItemModal({mode, id}){
   itemModalState = {mode, id};
   const title = document.getElementById('itemModalTitle');
-  const fCategory = document.getElementById('fCategory');
-  const fSite = document.getElementById('fSite');
+  const classContainer = document.getElementById('fClassFields');
   const fFolder = document.getElementById('fFolder');
   const hint = document.getElementById('fFolderHint');
-
-  let restrictFolderId = null, restrictCatId = null, restrictSiteId = null;
 
   if(mode==='add'){
     title.textContent = '新規ファイル（リンク項目）を追加';
     document.getElementById('fTitle').value = '';
     document.getElementById('fUrl').value = '';
+    populateClassificationSelects(classContainer);
 
+    let restrictFolderId = null;
     if(STATE.classification==='unit' && STATE.addContext.type==='folder'){
       restrictFolderId = STATE.addContext.id;
     }
-    if(STATE.classification==='site'){
-      if(STATE.addContext.type==='site'){ restrictSiteId = STATE.addContext.id; const s=DB.sites.find(x=>x.id===restrictSiteId); restrictCatId = s? s.categoryId:null; }
-      else if(STATE.addContext.type==='category'){ restrictCatId = STATE.addContext.id; }
+    if(STATE.classification!=='unit' && STATE.addContext.type==='category'){
+      const sel = classContainer.querySelector(`select[data-ctype-select="${STATE.classification}"]`);
+      if(sel) sel.value = STATE.addContext.id;
     }
-    populateCategorySelect(fCategory, restrictCatId);
-    fCategory.value = restrictCatId || fCategory.options[0]?.value;
-    populateSiteSelect(fSite, fCategory.value, restrictSiteId);
     populateFolderSelectEl(fFolder, restrictFolderId);
     if(STATE.classification==='unit' && restrictFolderId){
       fFolder.value = restrictFolderId;
@@ -1202,10 +1283,11 @@ function openItemModal({mode, id}){
     title.textContent = 'リンク項目を編集';
     document.getElementById('fTitle').value = it.title;
     document.getElementById('fUrl').value = it.url;
-    populateCategorySelect(fCategory, null);
-    fCategory.value = it.categoryId;
-    populateSiteSelect(fSite, it.categoryId, null);
-    fSite.value = it.siteId;
+    populateClassificationSelects(classContainer);
+    sortedClassificationTypes().forEach(ct=>{
+      const sel = classContainer.querySelector(`select[data-ctype-select="${ct.id}"]`);
+      if(sel && it.classifications && it.classifications[ct.id]) sel.value = it.classifications[ct.id];
+    });
     populateFolderSelectEl(fFolder, null); // 編集画面は全フォルダ構造を表示
     fFolder.value = it.folderId;
     hint.textContent = '編集画面ではすべてのフォルダ構造から選択できます。';
@@ -1213,25 +1295,22 @@ function openItemModal({mode, id}){
   openOverlay('itemOverlay');
 }
 
-document.getElementById('fCategory').addEventListener('change', (e)=>{
-  const fSite = document.getElementById('fSite');
-  populateSiteSelect(fSite, e.target.value, null);
-});
-
 document.getElementById('btnSaveItem').addEventListener('click', ()=>{
   const titleVal = document.getElementById('fTitle').value.trim();
   const urlVal = document.getElementById('fUrl').value.trim();
-  const catVal = document.getElementById('fCategory').value;
-  const siteVal = document.getElementById('fSite').value;
   const folderVal = document.getElementById('fFolder').value;
   if(!titleVal){ toast('タイトルを入力してください'); return; }
   if(!folderVal){ toast('所属フォルダを選択してください（先にフォルダを作成してください）'); return; }
+  const classifications = {};
+  document.querySelectorAll('#fClassFields select[data-ctype-select]').forEach(sel=>{
+    if(sel.value) classifications[sel.dataset.ctypeSelect] = sel.value;
+  });
   if(itemModalState.mode==='add'){
     const sibs = DB.items.filter(i=>i.folderId===folderVal);
     const it = {
       id: nextId('item', DB.items),
       title: titleVal, url: urlVal || '#',
-      categoryId: catVal, siteId: siteVal, folderId: folderVal,
+      folderId: folderVal, classifications,
       order: sibs.length
     };
     DB.items.push(it);
@@ -1239,7 +1318,7 @@ document.getElementById('btnSaveItem').addEventListener('click', ()=>{
   }else{
     const it = DB.items.find(x=>x.id===itemModalState.id);
     if(it){
-      it.title=titleVal; it.url=urlVal||'#'; it.categoryId=catVal; it.siteId=siteVal; it.folderId=folderVal;
+      it.title=titleVal; it.url=urlVal||'#'; it.folderId=folderVal; it.classifications=classifications;
       toast('リンクを更新しました');
     }
   }
@@ -1248,10 +1327,10 @@ document.getElementById('btnSaveItem').addEventListener('click', ()=>{
   render();
 });
 
-function deleteItem(id){
+async function deleteItem(id){
   const it = DB.items.find(x=>x.id===id);
   if(!it) return;
-  if(!confirm(`「${it.title}」を削除しますか？`)) return;
+  if(!(await appConfirm(`「${it.title}」を削除しますか？`))) return;
   DB.items = DB.items.filter(x=>x.id!==id);
   persist(); render(); toast('削除しました');
 }
@@ -1314,7 +1393,7 @@ document.getElementById('btnSaveFolder').addEventListener('click', ()=>{
   render();
 });
 
-function deleteFolder(id){
+async function deleteFolder(id){
   const f = folderById(id);
   if(!f) return;
   const descFolders = getDescendantFolderIds(id);
@@ -1323,7 +1402,7 @@ function deleteFolder(id){
   const msg = (descFolders.length || affectedItems.length)
     ? `「${f.name}」には下位フォルダ${descFolders.length}件・リンク${affectedItems.length}件があります。すべて削除しますか？`
     : `「${f.name}」を削除しますか？`;
-  if(!confirm(msg)) return;
+  if(!(await appConfirm(msg))) return;
   DB.items = DB.items.filter(it=>!allFolderIds.includes(it.folderId));
   DB.folders = DB.folders.filter(fl=>!allFolderIds.includes(fl.id));
   STATE.currentPath = STATE.currentPath.filter(p=>!allFolderIds.includes(p.id));
@@ -1333,99 +1412,192 @@ function deleteFolder(id){
 /* =========================================================
    12. 設定・マスター管理モーダル
    ========================================================= */
-function renderSettings(){
-  // categories
-  const catList = document.getElementById('catList');
-  catList.innerHTML = DB.categories.map(c=>{
-    const siteCount = DB.sites.filter(s=>s.categoryId===c.id).length;
-    return `
-    <div class="master-row">
-      <input type="text" value="${escapeHtml(c.name)}" data-cat-id="${c.id}" data-field="name">
-      <span class="pill-count">${siteCount}サイト</span>
-      <button class="icon-btn del" data-act="del-cat" data-id="${c.id}" title="削除">🗑</button>
-    </div>`;
-  }).join('');
-  catList.querySelectorAll('input[data-cat-id]').forEach(inp=>{
-    inp.addEventListener('change', ()=>{
-      const c = DB.categories.find(x=>x.id===inp.dataset.catId);
-      if(c && inp.value.trim()){ c.name = inp.value.trim(); persist(); render(); toast('カテゴリ名を更新しました'); }
-    });
-  });
-  catList.querySelectorAll('[data-act="del-cat"]').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      const cid = btn.dataset.id;
-      const relatedSites = DB.sites.filter(s=>s.categoryId===cid);
-      const relatedItems = DB.items.filter(it=>it.categoryId===cid);
-      if(!confirm(`このカテゴリを削除すると、サイト${relatedSites.length}件・リンク${relatedItems.length}件も削除されます。よろしいですか？`)) return;
-      const siteIds = relatedSites.map(s=>s.id);
-      DB.items = DB.items.filter(it=>it.categoryId!==cid);
-      DB.sites = DB.sites.filter(s=>s.categoryId!==cid);
-      DB.categories = DB.categories.filter(c=>c.id!==cid);
-      persist(); renderSettings(); render(); toast('カテゴリを削除しました');
-    });
-  });
+let settingsState = { selectedClassTypeId: null, dragging:null };
 
-  // sites
-  const siteList = document.getElementById('siteList');
-  siteList.innerHTML = DB.sites.map(s=>{
-    const itemCount = DB.items.filter(it=>it.siteId===s.id).length;
-    const catOpts = DB.categories.map(c=>`<option value="${c.id}" ${c.id===s.categoryId?'selected':''}>${escapeHtml(c.name)}</option>`).join('');
-    return `
-    <div class="master-row">
-      <input type="text" value="${escapeHtml(s.name)}" data-site-id="${s.id}" data-field="name">
-      <select data-site-id="${s.id}" data-field="cat">${catOpts}</select>
-      <span class="pill-count">${itemCount}件</span>
-      <button class="icon-btn del" data-act="del-site" data-id="${s.id}" title="削除">🗑</button>
-    </div>`;
-  }).join('');
-  siteList.querySelectorAll('input[data-site-id]').forEach(inp=>{
-    inp.addEventListener('change', ()=>{
-      const s = DB.sites.find(x=>x.id===inp.dataset.siteId);
-      if(s && inp.value.trim()){ s.name = inp.value.trim(); persist(); render(); toast('サイト名を更新しました'); }
+function renderSettings(){
+  const unitInp = document.getElementById('unitLabelInput');
+  if(document.activeElement !== unitInp) unitInp.value = unitLabel();
+  renderClassTypeList();
+  renderClassifyPane();
+}
+
+document.getElementById('unitLabelInput').addEventListener('change', (e)=>{
+  const v = e.target.value.trim();
+  if(!v){ e.target.value = unitLabel(); toast('名称を入力してください'); return; }
+  DB.unitLabel = v;
+  persist(); render(); toast('名称を更新しました');
+});
+
+/* ---- 汎用: master-row のドラッグ&ドロップ並び替え ----
+   containerEl 内の .master-row を並び替え、arr（DB配列）の order を更新する。
+   実データへの反映は即座に行うが、persist()/メイン画面への反映は「並び順を保存」ボタン待ち。 */
+function enableRowReorder(containerEl, getArr, idAttr){
+  containerEl.querySelectorAll('.master-row[data-reorder-id]').forEach(row=>{
+    row.setAttribute('draggable','true');
+    row.addEventListener('dragstart', e=>{
+      settingsState.dragging = row.dataset.reorderId;
+      e.dataTransfer.effectAllowed = 'move';
+      try{ e.dataTransfer.setData('text/plain', row.dataset.reorderId); }catch(err){}
+    });
+    row.addEventListener('dragend', ()=>{ settingsState.dragging = null; });
+    row.addEventListener('dragover', e=>{
+      if(!settingsState.dragging) return;
+      e.preventDefault();
+      row.classList.add('drag-over');
+    });
+    row.addEventListener('dragleave', ()=>row.classList.remove('drag-over'));
+    row.addEventListener('drop', e=>{
+      e.preventDefault();
+      row.classList.remove('drag-over');
+      const draggedId = settingsState.dragging;
+      settingsState.dragging = null;
+      const targetId = row.dataset.reorderId;
+      if(!draggedId || draggedId===targetId) return;
+      const arr = getArr();
+      arr.sort((a,b)=>(a.order||0)-(b.order||0));
+      const fromIdx = arr.findIndex(x=>x.id===draggedId);
+      const toIdx = arr.findIndex(x=>x.id===targetId);
+      if(fromIdx<0 || toIdx<0) return;
+      const [moved] = arr.splice(fromIdx,1);
+      arr.splice(toIdx,0,moved);
+      arr.forEach((o,idx)=>o.order=idx);
+      renderSettings();
+      toast('並び替えました（「並び順を保存」で確定します）');
     });
   });
-  siteList.querySelectorAll('select[data-site-id]').forEach(sel=>{
-    sel.addEventListener('change', ()=>{
-      const s = DB.sites.find(x=>x.id===sel.dataset.siteId);
-      if(s){
-        s.categoryId = sel.value;
-        DB.items.filter(it=>it.siteId===s.id).forEach(it=>it.categoryId=sel.value);
-        persist(); render(); toast('所属カテゴリを変更しました');
+}
+
+// ---- 分類管理（分類方法そのものの管理） ----
+function renderClassTypeList(){
+  const list = document.getElementById('classTypeList');
+  const sorted = sortedClassificationTypes();
+  list.innerHTML = sorted.map(ct=>{
+    const catCount = DB.categories.filter(c=>c.typeId===ct.id).length;
+    return `
+    <div class="master-row" data-reorder-id="${ct.id}">
+      <span class="master-drag-handle" title="ドラッグして並び替え">⋮⋮</span>
+      <input type="text" value="${escapeHtml(ct.name)}" data-ctype-id="${ct.id}" data-field="name">
+      <span class="pill-count">${catCount}カテゴリ</span>
+      <button class="icon-btn del" data-act="del-ctype" data-id="${ct.id}" title="削除">🗑</button>
+    </div>`;
+  }).join('') || `<div class="empty-state" style="padding:16px;">分類方法がまだありません。</div>`;
+
+  list.querySelectorAll('input[data-ctype-id]').forEach(inp=>{
+    inp.addEventListener('change', ()=>{
+      const ct = DB.classificationTypes.find(x=>x.id===inp.dataset.ctypeId);
+      if(ct && inp.value.trim()){
+        ct.name = inp.value.trim();
+        persist(); renderSettings(); render(); toast('分類方法名を更新しました');
       }
     });
   });
-  siteList.querySelectorAll('[data-act="del-site"]').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      const sid = btn.dataset.id;
-      const relatedItems = DB.items.filter(it=>it.siteId===sid);
-      if(!confirm(`このサイトを削除すると、リンク${relatedItems.length}件も削除されます。よろしいですか？`)) return;
-      DB.items = DB.items.filter(it=>it.siteId!==sid);
-      DB.sites = DB.sites.filter(s=>s.id!==sid);
-      persist(); renderSettings(); render(); toast('サイトを削除しました');
+  enableRowReorder(list, ()=>DB.classificationTypes, 'ctype');
+}
+
+// 削除・追加ボタンはイベント委譲で一度だけバインド（再描画してもボタンが失われない）
+document.getElementById('classTypeList').addEventListener('click', async (e)=>{
+  const btn = e.target.closest('[data-act="del-ctype"]');
+  if(!btn) return;
+  const tid = btn.dataset.id;
+  const relatedCats = DB.categories.filter(c=>c.typeId===tid);
+  const catIds = relatedCats.map(c=>c.id);
+  const affectedItems = DB.items.filter(it=>it.classifications && catIds.includes(it.classifications[tid]));
+  const ok = await appConfirm(`この分類方法を削除すると、カテゴリ${relatedCats.length}件が削除され、関連するリンク${affectedItems.length}件の分類が解除されます。よろしいですか？`);
+  if(!ok) return;
+  DB.categories = DB.categories.filter(c=>c.typeId!==tid);
+  DB.items.forEach(it=>{ if(it.classifications) delete it.classifications[tid]; });
+  DB.classificationTypes = DB.classificationTypes.filter(c=>c.id!==tid);
+  if(STATE.classification===tid){ STATE.classification='unit'; STATE.currentPath=[]; }
+  if(settingsState.selectedClassTypeId===tid) settingsState.selectedClassTypeId = null;
+  persist(); renderSettings(); render(); toast('分類方法を削除しました');
+});
+
+document.getElementById('btnAddClassType').addEventListener('click', ()=>{
+  const inp = document.getElementById('newClassTypeName');
+  const v = inp.value.trim();
+  if(!v){ toast('分類方法名を入力してください'); return; }
+  const maxOrder = DB.classificationTypes.reduce((m,c)=>Math.max(m,c.order||0),-1);
+  const ct = {id: nextId('ctype', DB.classificationTypes), name:v, order:maxOrder+1};
+  DB.classificationTypes.push(ct);
+  settingsState.selectedClassTypeId = ct.id;
+  inp.value='';
+  persist(); renderSettings(); render(); toast('分類方法を追加しました');
+});
+
+// ---- 分類方法（分類方法内のカテゴリ管理） ----
+function renderClassifyPane(){
+  if(!settingsState.selectedClassTypeId || !DB.classificationTypes.find(t=>t.id===settingsState.selectedClassTypeId)){
+    settingsState.selectedClassTypeId = sortedClassificationTypes()[0] ? sortedClassificationTypes()[0].id : null;
+  }
+  const toggle = document.getElementById('classifyTypeToggle');
+  toggle.innerHTML = sortedClassificationTypes().map(ct=>
+    `<button data-select-ctype="${ct.id}" class="${ct.id===settingsState.selectedClassTypeId?'active':''}">${escapeHtml(ct.name)}</button>`
+  ).join('') || `<span class="field-hint">分類方法がありません。先に「分類管理」タブで追加してください。</span>`;
+  toggle.querySelectorAll('button').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      settingsState.selectedClassTypeId = b.dataset.selectCtype;
+      renderClassifyPane();
     });
   });
 
-  // new site category dropdown
-  const newSiteCat = document.getElementById('newSiteCat');
-  newSiteCat.innerHTML = DB.categories.map(c=>`<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+  const catList = document.getElementById('classifyCatList');
+  if(!settingsState.selectedClassTypeId){
+    catList.innerHTML = '';
+    return;
+  }
+  const tid = settingsState.selectedClassTypeId;
+  const cats = categoriesOfType(tid);
+  catList.innerHTML = cats.map(c=>{
+    const itemCount = DB.items.filter(it=>it.classifications && it.classifications[tid]===c.id).length;
+    return `
+    <div class="master-row" data-reorder-id="${c.id}">
+      <span class="master-drag-handle" title="ドラッグして並び替え">⋮⋮</span>
+      <input type="text" value="${escapeHtml(c.name)}" data-classify-cat-id="${c.id}" data-field="name">
+      <span class="pill-count">${itemCount}件</span>
+      <button class="icon-btn del" data-act="del-classify-cat" data-id="${c.id}" title="削除">🗑</button>
+    </div>`;
+  }).join('') || `<div class="empty-state" style="padding:16px;">この分類方法にはまだカテゴリがありません。</div>`;
+
+  catList.querySelectorAll('input[data-classify-cat-id]').forEach(inp=>{
+    inp.addEventListener('change', ()=>{
+      const c = DB.categories.find(x=>x.id===inp.dataset.classifyCatId);
+      if(c && inp.value.trim()){
+        c.name = inp.value.trim();
+        persist(); render(); renderSettings(); toast('カテゴリ名を更新しました');
+      }
+    });
+  });
+  enableRowReorder(catList, ()=>DB.categories.filter(c=>c.typeId===tid), 'cat');
 }
 
-document.getElementById('btnAddCat').addEventListener('click', ()=>{
-  const inp = document.getElementById('newCatName');
+// 削除ボタンはイベント委譲で一度だけバインド
+document.getElementById('classifyCatList').addEventListener('click', async (e)=>{
+  const btn = e.target.closest('[data-act="del-classify-cat"]');
+  if(!btn) return;
+  const cid = btn.dataset.id;
+  const tid = settingsState.selectedClassTypeId;
+  const affectedItems = DB.items.filter(it=>it.classifications && it.classifications[tid]===cid);
+  const ok = await appConfirm(`このカテゴリを削除すると、リンク${affectedItems.length}件のこの分類方法での分類が解除されます。よろしいですか？`);
+  if(!ok) return;
+  DB.items.forEach(it=>{ if(it.classifications && it.classifications[tid]===cid) delete it.classifications[tid]; });
+  DB.categories = DB.categories.filter(c=>c.id!==cid);
+  persist(); renderSettings(); render(); toast('カテゴリを削除しました');
+});
+
+document.getElementById('btnAddClassifyCat').addEventListener('click', ()=>{
+  const inp = document.getElementById('newClassifyCatName');
   const v = inp.value.trim();
+  if(!settingsState.selectedClassTypeId){ toast('先に分類方法を選択・追加してください'); return; }
   if(!v){ toast('カテゴリ名を入力してください'); return; }
-  DB.categories.push({id: nextId('cat', DB.categories), name:v});
+  const tid = settingsState.selectedClassTypeId;
+  const maxOrder = DB.categories.filter(c=>c.typeId===tid).reduce((m,c)=>Math.max(m,c.order||0),-1);
+  DB.categories.push({id: nextId('cat', DB.categories), name:v, typeId: tid, order:maxOrder+1});
   inp.value='';
   persist(); renderSettings(); render(); toast('カテゴリを追加しました');
 });
-document.getElementById('btnAddSite').addEventListener('click', ()=>{
-  const inp = document.getElementById('newSiteName');
-  const v = inp.value.trim();
-  const cat = document.getElementById('newSiteCat').value;
-  if(!v){ toast('サイト名を入力してください'); return; }
-  DB.sites.push({id: nextId('site', DB.sites), name:v, categoryId:cat});
-  inp.value='';
-  persist(); renderSettings(); render(); toast('サイトを追加しました');
+
+document.getElementById('btnSaveOrder').addEventListener('click', ()=>{
+  persist(); render(); renderSettings(); toast('並び順を保存し、全体に反映しました');
 });
 
 document.querySelectorAll('.stab').forEach(tab=>{
@@ -1433,7 +1605,7 @@ document.querySelectorAll('.stab').forEach(tab=>{
     document.querySelectorAll('.stab').forEach(t=>t.classList.remove('active'));
     document.querySelectorAll('.settings-pane').forEach(p=>p.classList.remove('active'));
     tab.classList.add('active');
-    document.getElementById('pane'+({cats:'Cats',sites:'Sites',data:'Data'})[tab.dataset.tab]).classList.add('active');
+    document.getElementById('pane'+({classTypes:'ClassTypes',classify:'Classify',data:'Data'})[tab.dataset.tab]).classList.add('active');
   });
 });
 
@@ -1465,11 +1637,11 @@ document.getElementById('jsonFileInput').addEventListener('change', (e)=>{
   const file = e.target.files[0];
   if(!file) return;
   const reader = new FileReader();
-  reader.onload = ()=>{
+  reader.onload = async ()=>{
     try{
       const parsed = JSON.parse(reader.result);
-      if(!parsed.categories || !parsed.sites || !parsed.folders || !parsed.items) throw new Error('形式が不正です');
-      if(!confirm('現在のデータをすべて置き換えて読み込みます。よろしいですか？')) return;
+      if(!parsed.classificationTypes || !parsed.categories || !parsed.folders || !parsed.items) throw new Error('形式が不正です');
+      if(!(await appConfirm('現在のデータをすべて置き換えて読み込みます。よろしいですか？'))) return;
       DB = parsed;
       STATE.expanded.clear(); STATE.currentPath=[]; STATE.addContext={type:null,id:null};
       persist(); renderSettings(); render();
@@ -1491,12 +1663,17 @@ function csvEscape(v){
   return s;
 }
 function buildCsv(){
-  const header = ['ファイルID','ファイル名/タイトル','URL','カテゴリ名','所属親フォルダID','所属親フォルダ名','フォルダパス'];
+  const classHeaders = sortedClassificationTypes().map(ct=>ct.name);
+  const header = ['ファイルID','ファイル名/タイトル','URL', ...classHeaders, '所属親フォルダID','所属親フォルダ名','フォルダパス'];
   const rows = [header.join(',')];
   DB.items.forEach(it=>{
     const f = folderById(it.folderId);
+    const classVals = sortedClassificationTypes().map(ct=>{
+      const cid = it.classifications && it.classifications[ct.id];
+      return cid ? catName(cid) : '';
+    });
     rows.push([
-      it.id, it.title, it.url, catName(it.categoryId),
+      it.id, it.title, it.url, ...classVals,
       it.folderId||'', f? f.name:'', folderPath(it.folderId)
     ].map(csvEscape).join(','));
   });
@@ -1555,7 +1732,7 @@ document.getElementById('csvFileInput').addEventListener('change', (e)=>{
   const file = e.target.files[0];
   if(!file) return;
   const reader = new FileReader();
-  reader.onload = ()=>{
+  reader.onload = async ()=>{
     try{
       const text = reader.result.replace(/^\uFEFF/, '');
       const rows = parseCsv(text);
@@ -1565,27 +1742,31 @@ document.getElementById('csvFileInput').addEventListener('change', (e)=>{
         id: header.indexOf('ファイルID'),
         title: header.indexOf('ファイル名/タイトル'),
         url: header.indexOf('URL'),
-        cat: header.indexOf('カテゴリ名'),
         parentFolderId: header.indexOf('所属親フォルダID'),
         parentFolderName: header.indexOf('所属親フォルダ名'),
         path: header.indexOf('フォルダパス')
       };
+      const classIdx = sortedClassificationTypes().map(ct=>({ctypeId:ct.id, colIdx:header.indexOf(ct.name)}));
       if(idx.title<0 || idx.url<0){ throw new Error('必須列（ファイル名/タイトル, URL）が見つかりません'); }
-      if(!confirm(`CSVから${rows.length-1}件のリンクを取り込みます。IDが一致する項目は更新、それ以外は新規追加されます。よろしいですか？`)) return;
+      if(!(await appConfirm(`CSVから${rows.length-1}件のリンクを取り込みます。IDが一致する項目は更新、それ以外は新規追加されます。よろしいですか？`))) return;
 
       for(let r=1;r<rows.length;r++){
         const row = rows[r];
         const idVal = idx.id>=0 ? row[idx.id] : '';
         const titleVal = row[idx.title] || '(無題)';
         const urlVal = row[idx.url] || '#';
-        const catNameVal = idx.cat>=0 ? row[idx.cat] : '';
         const pathVal = idx.path>=0 ? row[idx.path] : '';
 
-        let cat = DB.categories.find(c=>c.name===catNameVal);
-        if(!cat && catNameVal){
-          cat = {id: nextId('cat', DB.categories), name:catNameVal};
-          DB.categories.push(cat);
-        }
+        const classifications = {};
+        classIdx.forEach(({ctypeId,colIdx})=>{
+          if(colIdx<0) return;
+          const name = row[colIdx];
+          if(!name) return;
+          let cat = DB.categories.find(c=>c.typeId===ctypeId && c.name===name);
+          if(!cat){ cat = {id: nextId('cat', DB.categories), name, typeId:ctypeId}; DB.categories.push(cat); }
+          classifications[ctypeId] = cat.id;
+        });
+
         let folderId = pathVal ? ensureFolderPath(pathVal) : null;
         if(!folderId){
           // fallback: put into a generic "CSV取込" folder
@@ -1597,15 +1778,14 @@ document.getElementById('csvFileInput').addEventListener('change', (e)=>{
         let existing = idVal ? DB.items.find(it=>it.id===idVal) : null;
         if(existing){
           existing.title = titleVal; existing.url = urlVal;
-          if(cat) existing.categoryId = cat.id;
+          existing.classifications = Object.assign({}, existing.classifications, classifications);
           existing.folderId = folderId;
         }else{
           const sibs = DB.items.filter(it=>it.folderId===folderId);
           const newItem = {
             id: (idVal && !DB.items.find(it=>it.id===idVal)) ? idVal : nextId('item', DB.items),
             title:titleVal, url:urlVal,
-            categoryId: cat? cat.id : (DB.categories[0]? DB.categories[0].id:'cat_01'),
-            siteId: (DB.sites.find(s=>s.categoryId===(cat?cat.id:''))||DB.sites[0]||{}).id || '',
+            classifications,
             folderId, order: sibs.length
           };
           DB.items.push(newItem);
@@ -1620,6 +1800,139 @@ document.getElementById('csvFileInput').addEventListener('change', (e)=>{
   reader.readAsText(file, 'utf-8');
   e.target.value = '';
 });
+
+/* =========================================================
+   14. ローカルファイル連携（data.json / File System Access API）
+   ---------------------------------------------------------
+   対応ブラウザ（Chrome/Edge等）では、同じフォルダのdata.jsonを
+   直接読み書きできる。ブラウザの制約上、初回のファイル選択は
+   必ずユーザーの操作（クリック）が必要。一度選ぶとIndexedDBに
+   ハンドルを保存し、次回起動時は許可が残っていれば自動で読み込む。
+   File System Access API非対応のブラウザ（Safari/Firefox等）では
+   従来通りJSONのダウンロード／アップロードを利用する。
+   ========================================================= */
+const FS_SUPPORTED = ('showOpenFilePicker' in window);
+let dataFileHandle = null;
+
+function idbOpen(){
+  return new Promise((resolve,reject)=>{
+    const req = indexedDB.open('studyLinkFsDB', 1);
+    req.onupgradeneeded = ()=>{ req.result.createObjectStore('handles'); };
+    req.onsuccess = ()=>resolve(req.result);
+    req.onerror = ()=>reject(req.error);
+  });
+}
+async function idbGet(key){
+  try{
+    const db = await idbOpen();
+    return await new Promise(resolve=>{
+      const tx = db.transaction('handles','readonly');
+      const g = tx.objectStore('handles').get(key);
+      g.onsuccess = ()=>resolve(g.result || null);
+      g.onerror = ()=>resolve(null);
+    });
+  }catch(e){ return null; }
+}
+async function idbSet(key, value){
+  try{
+    const db = await idbOpen();
+    return await new Promise(resolve=>{
+      const tx = db.transaction('handles','readwrite');
+      tx.objectStore('handles').put(value, key);
+      tx.oncomplete = ()=>resolve(true);
+      tx.onerror = ()=>resolve(false);
+    });
+  }catch(e){ return false; }
+}
+
+function updateFsStatus(connected){
+  const el = document.getElementById('fsStatus');
+  if(!el) return;
+  el.textContent = connected ? `🟢 連携中: ${dataFileHandle ? dataFileHandle.name : 'data.json'}` : '⚪ 未連携';
+}
+
+async function connectDataFile(){
+  if(!FS_SUPPORTED){ toast('お使いのブラウザはこの機能に未対応です（Chrome / Edgeでお試しください）'); return; }
+  try{
+    const [handle] = await window.showOpenFilePicker({
+      types: [{description:'JSON データファイル', accept:{'application/json':['.json']}}],
+      excludeAcceptAllOption: false
+    });
+    dataFileHandle = handle;
+    await idbSet('dataJsonHandle', handle);
+    const ok = await loadFromFileHandle(false);
+    updateFsStatus(true);
+    toast(ok ? `${handle.name} と連携し、内容を読み込みました` : `${handle.name} と連携しました`);
+  }catch(err){
+    if(err && err.name !== 'AbortError') toast('ファイルとの連携に失敗しました: '+err.message);
+  }
+}
+
+async function loadFromFileHandle(showToast){
+  if(!dataFileHandle) return false;
+  try{
+    const file = await dataFileHandle.getFile();
+    const text = await file.text();
+    const parsed = JSON.parse(text);
+    if(!parsed.classificationTypes || !parsed.categories || !parsed.folders || !parsed.items){
+      throw new Error('data.jsonの形式が不正です');
+    }
+    DB = parsed;
+    STATE.expanded.clear(); STATE.currentPath=[]; STATE.addContext={type:null,id:null};
+    persist(); renderSettings(); render();
+    if(showToast) toast('data.jsonを読み込みました');
+    return true;
+  }catch(err){
+    toast('data.jsonの読み込みに失敗しました: '+err.message);
+    return false;
+  }
+}
+
+async function saveToFileHandle(showToast){
+  if(!dataFileHandle) return false;
+  try{
+    if((await dataFileHandle.queryPermission({mode:'readwrite'})) !== 'granted'){
+      const perm = await dataFileHandle.requestPermission({mode:'readwrite'});
+      if(perm !== 'granted'){ toast('書き込みの許可が得られませんでした'); return false; }
+    }
+    const writable = await dataFileHandle.createWritable();
+    await writable.write(JSON.stringify(DB, null, 2));
+    await writable.close();
+    if(showToast) toast('data.jsonへ保存しました');
+    return true;
+  }catch(err){
+    toast('data.jsonへの保存に失敗しました: '+err.message);
+    return false;
+  }
+}
+
+document.getElementById('btnFsConnect').addEventListener('click', connectDataFile);
+document.getElementById('btnFsReload').addEventListener('click', async ()=>{
+  if(!dataFileHandle){ toast('先に「data.jsonと連携する」を押してファイルを選んでください'); return; }
+  await loadFromFileHandle(true);
+});
+document.getElementById('btnFsSave').addEventListener('click', async ()=>{
+  if(!dataFileHandle){ toast('先に「data.jsonと連携する」を押してファイルを選んでください'); return; }
+  await saveToFileHandle(true);
+});
+
+// ①起動時の自動読み込み：前回連携したファイルへの権限が残っていれば自動で読み込む
+(async function tryAutoLoadDataFile(){
+  if(!FS_SUPPORTED) return;
+  const handle = await idbGet('dataJsonHandle');
+  if(!handle) return;
+  dataFileHandle = handle;
+  try{
+    const perm = await handle.queryPermission({mode:'readwrite'});
+    if(perm === 'granted'){
+      await loadFromFileHandle(false);
+      updateFsStatus(true);
+    }else{
+      // 許可が切れている場合は再度「連携する」ボタンでの許可が必要
+      updateFsStatus(false);
+    }
+  }catch(e){ updateFsStatus(false); }
+})();
 
 /* =========================================================
    15. ツールバー操作
@@ -1650,7 +1963,7 @@ document.getElementById('btnNewFile').addEventListener('click', ()=>{
   openItemModal({mode:'add'});
 });
 document.getElementById('btnNewFolder').addEventListener('click', ()=>{
-  if(STATE.classification!=='unit'){ toast('新規フォルダは単元分類でのみ追加できます'); return; }
+  if(STATE.classification!=='unit'){ toast(`新規フォルダは${unitLabel()}分類でのみ追加できます`); return; }
   openFolderModal({mode:'add'});
 });
 
