@@ -19,31 +19,31 @@
   "categories": [
     {
       "id": "cat_001",
-      "name": "古代",
+      "name": "01.古代",
       "typeId": "ctype_01",
       "order": 0
     },
     {
       "id": "cat_002",
-      "name": "中世",
+      "name": "02.中世",
       "typeId": "ctype_01",
       "order": 1
     },
     {
       "id": "cat_003",
-      "name": "近世",
+      "name": "03.近世",
       "typeId": "ctype_01",
       "order": 2
     },
     {
       "id": "cat_004",
-      "name": "近代",
+      "name": "04.近代",
       "typeId": "ctype_01",
       "order": 3
     },
     {
       "id": "cat_005",
-      "name": "現代",
+      "name": "05.現代",
       "typeId": "ctype_01",
       "order": 4
     },
@@ -67,13 +67,13 @@
     },
     {
       "id": "cat_009",
-      "name": "スタサプスタンダード",
+      "name": "04.スタサプスタンダード",
       "typeId": "ctype_02",
       "order": 3
     },
     {
       "id": "cat_010",
-      "name": "Try it",
+      "name": "03.Try it",
       "typeId": "ctype_02",
       "order": 2
     },
@@ -97,13 +97,13 @@
     },
     {
       "id": "cat_014",
-      "name": "教科書",
+      "name": "01.教科書",
       "typeId": "ctype_02",
       "order": 0
     },
     {
       "id": "cat_015",
-      "name": "資料集",
+      "name": "02.資料集",
       "typeId": "ctype_02",
       "order": 1
     },
@@ -151,7 +151,7 @@
     },
     {
       "id": "cat_023",
-      "name": "その他",
+      "name": "06.その他",
       "typeId": "ctype_01",
       "order": 5
     },
